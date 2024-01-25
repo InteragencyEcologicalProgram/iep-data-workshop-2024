@@ -1,0 +1,118 @@
+---
+title: "Bay Delta Figure Gallery"
+author: "DUWG"
+date: "2024-01-12"
+output: 
+  html_document: 
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: hide
+---
+
+
+This document provides examples and code for commonly-plotted data types using data collected in the San Francisco Estuary.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(viridis)
+library(readr)
+library(here)
+```
+
+# Environmental time series
+
+## Multiple parameters 
+
+```{r RVB-fig, fig.cap = "Air Temperature, Dissolved Oxygen, Electrical Conductivity and Turbidity Data at Rio Vista Bridge (RVB) in 2017. Data were downloaded from CDEC (cdec.water.ca.gov)", fig.width = 8, fig.height = 7.5}
+# Read in data
+RVB_df <- readRDS(here("data/CDEC_parameters_RVB_2015_2019.rds")) %>%
+  filter(!(parameter == "EC" & parameter_value <100))
+
+# Filter to 2017
+RVB_2017 <- RVB_df %>% 
+  filter(year == 2017) %>%
+  mutate(parameter = case_when(parameter == "AirTempF" ~ "Air Temp (°F)",
+                               parameter == "DO" ~ "DO (mg/L)",
+                               parameter == "EC" ~ "EC (uS/cm)",
+                               parameter == "TurbidityNTU" ~ "Turbidity (NTU)"))
+
+# Plot data 
+ggplot(data = RVB_2017) + 
+  geom_point(aes(x = datetime, y = parameter_value)) + 
+  facet_wrap(~parameter, scale = "free_y", nrow = 4, strip.position = "left") +
+  scale_x_datetime(date_breaks = "1 month", date_labels = "%b") +
+  theme_bw() + 
+  theme(axis.text = element_text(size = 12),
+        strip.text = element_text(size = 12),
+        axis.title = element_blank(),
+        strip.background = element_rect(fill="White", color = "White"),
+        strip.placement = "outside")
+```
+## Multiple stations, water year type
+
+```{r CDECstations-fig, fig.cap = "Water Temperature at VER (Vernalis), JER (Jersey Point) and RVB (Rio Vista Bridge) between 2015-2018. Data were downloaded from CDEC (cdec.water.ca.gov). A threshold line of 70°F (approximately 21°C) is displayed on the plots to indicate stressful temperatures for some native fishes.", fig.width = 8, fig.height = 7.5}
+# Read in data
+watertemp_df <- readRDS(here("data/CDEC_watertemp_JER_VER_RVB_2015_2019.rds")) 
+wytype <- read.csv(here("data/WYType.csv")) %>%
+  filter(Basin == "SacramentoValley") %>%
+  select(WY, Yr.type)
+
+# Filter to 2017
+watertemp <- watertemp_df %>%
+  rename(station = location_id,
+         watertemp = parameter_value) %>%
+  mutate(year = year(datetime),
+         yearF = factor(year),
+         month = month(datetime),
+         WY = if_else(month>10, year + 1, year))%>%
+  filter(WY <2019 & WY > 2014) %>%
+  left_join(wytype, by = "WY")
+
+# Plot data 
+ggplot(data = watertemp) + 
+  geom_point(aes(x = datetime, y = watertemp, color = Yr.type), size = 1.5) + 
+  geom_hline(yintercept = 70, linetype = "dashed") + 
+  facet_wrap(~station, nrow = 3) +
+  scale_x_datetime(date_breaks = "3 months", date_labels = "%b %Y") +
+  labs(y = "Water Temperature (°F)", color = "WY Type") +
+  scale_color_viridis(discrete = TRUE)+ 
+  theme_bw() + 
+  theme(axis.text = element_text(size = 12),
+        strip.text = element_text(size = 12),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.5))
+
+```
+
+# Fish Data
+
+## Fish cpue vs environmental data 
+
+## Abundance index barplot or escapement barplot (year by abundance)
+
+## Salvage by year
+
+## cpue by region (zoop or fish)
+
+## cpue by water year type  
+
+## cpue by action period/inundation period 
+
+* shaded periods of time with overlay of cpue or env data time series 
+
+
+
+# Spatial data
+
+## Station map
+
+* mapview
+* normal
+
+## Fish detections map
