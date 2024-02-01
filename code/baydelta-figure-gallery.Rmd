@@ -31,7 +31,7 @@ library(here)
 
 ```{r RVB-fig, fig.cap = "Air Temperature, Dissolved Oxygen, Electrical Conductivity and Turbidity Data at Rio Vista Bridge (RVB) in 2017. Data were downloaded from CDEC (cdec.water.ca.gov)", fig.width = 8, fig.height = 7.5}
 # Read in data
-RVB_df <- readRDS(here("data/CDEC_parameters_RVB_2015_2019.rds")) %>%
+RVB_df <- readRDS(here("data/raw/CDEC_parameters_RVB_2015_2019.rds")) %>%
   filter(!(parameter == "EC" & parameter_value <100))
 
 # Filter to 2017
@@ -58,8 +58,8 @@ ggplot(data = RVB_2017) +
 
 ```{r CDECstations-fig, fig.cap = "Water Temperature at VER (Vernalis), JER (Jersey Point) and RVB (Rio Vista Bridge) between 2015-2018. Data were downloaded from CDEC (cdec.water.ca.gov). A threshold line of 70°F (approximately 21°C) is displayed on the plots to indicate stressful temperatures for some native fishes.", fig.width = 8, fig.height = 7.5}
 # Read in data
-watertemp_df <- readRDS(here("data/CDEC_watertemp_JER_VER_RVB_2015_2019.rds")) 
-wytype <- read.csv(here("data/WYType.csv")) %>%
+watertemp_df <- readRDS(here("data/raw/CDEC_watertemp_JER_VER_RVB_2015_2019.rds")) 
+wytype <- read.csv(here("data/raw/WYType.csv")) %>%
   filter(Basin == "SacramentoValley") %>%
   select(WY, Yr.type)
 
