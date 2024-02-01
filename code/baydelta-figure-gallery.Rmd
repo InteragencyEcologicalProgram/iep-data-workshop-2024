@@ -10,7 +10,6 @@ output:
     code_folding: hide
 ---
 
-
 This document provides examples and code for commonly-plotted data types using data collected in the San Francisco Estuary.
 
 ```{r setup, include=FALSE}
@@ -43,7 +42,7 @@ RVB_2017 <- RVB_df %>%
                                parameter == "TurbidityNTU" ~ "Turbidity (NTU)"))
 
 # Plot data 
-ggplot(data = RVB_2017) + 
+(rvb_plot <- ggplot(data = RVB_2017) + 
   geom_point(aes(x = datetime, y = parameter_value)) + 
   facet_wrap(~parameter, scale = "free_y", nrow = 4, strip.position = "left") +
   scale_x_datetime(date_breaks = "1 month", date_labels = "%b") +
@@ -52,8 +51,20 @@ ggplot(data = RVB_2017) +
         strip.text = element_text(size = 12),
         axis.title = element_blank(),
         strip.background = element_rect(fill="White", color = "White"),
-        strip.placement = "outside")
+        strip.placement = "outside"))
+
 ```
+
+## Export figure
+
+```{r, echo = FALSE, eval = FALSE}
+png(here("figures/plot_RVB_2017.png"), units = "in", width = 6, height = 8, res = 300)
+rvb_plot
+dev.off()
+```
+
+
+
 ## Multiple stations, water year type
 
 ```{r CDECstations-fig, fig.cap = "Water Temperature at VER (Vernalis), JER (Jersey Point) and RVB (Rio Vista Bridge) between 2015-2018. Data were downloaded from CDEC (cdec.water.ca.gov). A threshold line of 70°F (approximately 21°C) is displayed on the plots to indicate stressful temperatures for some native fishes.", fig.width = 8, fig.height = 7.5}
