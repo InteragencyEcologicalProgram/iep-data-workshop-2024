@@ -151,6 +151,24 @@ Hutton, P. H., J. S. Rath, L. Chen, M. J. Ungs, and S. J. Roy. 2016. Nine Decade
 
 
 ```{r}
-ggplot(filter(Dayflow, !is.na(X2)), aes(x = Date, y = X2))+ geom_line()
+# 
+# #download older X2 files
+# library(readxl)
+# library(httr)
+# 
+# download.file("", "tempfile.xlsx", method = "libcurl")
+# 
+# 
+# 
+# download.file("https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=207807&inline", "tempfile.pdf", method = "libcurl")
+# 
+# # save to dataframe
+# x2hutton <- read_excel("tempfile.xlsx")
+# 
+# 
+# # remove excel file from disk
+# file.remove("tempfile.xlsx")
+# 
+# ggplot(filter(Dayflow, !is.na(X2)), aes(x = Date, y = X2))+ geom_line()
 ```
 
