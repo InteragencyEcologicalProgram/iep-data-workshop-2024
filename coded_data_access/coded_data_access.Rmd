@@ -1,0 +1,118 @@
+---
+title: "Coded data access"
+author: "Dave Bosworth"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+
+# Simplist Method
+
+```{r}
+library(readr)
+
+
+
+```
+
+
+
+# Dedicated R Packages
+
+## EDIutils
+
+```{r}
+library(EDIutils)
+
+
+
+```
+
+
+## dataRetreival
+
+```{r}
+library(dataRetrieval)
+
+
+```
+
+
+
+## cder
+
+```{r}
+library(cder)
+
+
+```
+
+
+
+# IEP Integrated Datasets
+
+## deltafish
+
+Need to figure this one out
+
+
+## zooper
+
+```{r}
+library(zooper)
+
+```
+
+Also show link to EDI data publication
+
+
+## discretewq
+
+```{r}
+library(discretewq)
+
+
+```
+
+Also show link to EDI data publication
+
+
+## deltamapr
+
+```{r}
+library(deltamapr)
+
+
+```
+
+
+# Web Scraping
+
+```{r}
+library(rvest)
+```
+
+
+
+# Extract data from .pdf
+
+```{r}
+library(pdftools)
+
+
+```
+
+
+
+
+
+
+
