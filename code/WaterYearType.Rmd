@@ -105,6 +105,10 @@ https://data.cnra.ca.gov/dataset/dayflow
 
 #download the data
 
+dayflow2023 = read_csv("https://data.cnra.ca.gov/dataset/06ee2016-b138-47d7-9e85-f46fae674536/resource/f7c1ba7f-bd64-4762-88e3-6db9b2501b38/download/dayflowcalculations2023.csv")%>%
+  mutate(Date = mdy(Date))
+
+
 Dayflow2022 = read_csv("https://data.cnra.ca.gov/dataset/06ee2016-b138-47d7-9e85-f46fae674536/resource/5300e2e6-8ff0-45b7-ad70-9e0c37ab8fcf/download/dayflowcalculations2022.csv")
   
 Dayflow2021 = read_csv("https://data.cnra.ca.gov/dataset/06ee2016-b138-47d7-9e85-f46fae674536/resource/83122ce7-e7f5-4ad1-b5e9-6a7032cb1117/download/dayflowcalculations2021.csv")
@@ -136,7 +140,8 @@ Dayflow97_20 = read_csv("https://data.cnra.ca.gov/dataset/06ee2016-b138-47d7-9e8
 
 
 Dayflow = bind_rows(Dayflow29_39, Dayflow40_49, Dayflow50_55, Dayflow56_69, Dayflow70_83, Dayflow84_96, Dayflow97_20,
-                    Dayflow2021, Dayflow2022)
+                    Dayflow2021, Dayflow2022, dayflow2023)
+
 
 ```
 
