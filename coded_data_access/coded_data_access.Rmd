@@ -1,0 +1,301 @@
+---
+title: "Coded data access in R"
+author: "Dave Bosworth<br>CA Department of Water Resources"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document: 
+    code_folding: show
+    toc: true
+    toc_float:
+      collapsed: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load tidyverse}
+library(tidyverse)
+```
+
+
+# Simplist Method
+
+```{r read csv dayflow, message = FALSE}
+library(readr)
+
+# Import data from a URL using read_csv()
+url_dayflow_2023 <- "https://data.cnra.ca.gov/dataset/06ee2016-b138-47d7-9e85-f46fae674536/resource/f7c1ba7f-bd64-4762-88e3-6db9b2501b38/download/dayflowcalculations2023.csv"
+df_dayflow_2023 <- read_csv(url_dayflow_2023)
+df_dayflow_2023
+```
+
+```{r read csv edi, warning = FALSE, message = FALSE}
+url_edi_emp_2022 <- "https://portal.edirepository.org/nis/dataviewer?packageid=edi.458.10&entityid=cf231071093ac2861893793517db26f3"
+# Import data from EDI to temporary directory
+download.file(url_edi_emp_2022, file.path(tempdir(), "EMP_DWQ_1975_2022.csv"), mode = "wb")
+df_emp_2022 <- read_csv(
+  file.path(tempdir(), "EMP_DWQ_1975_2022.csv"),
+  col_types = cols_only(Station = "c", Date = "c", Time = "c", Secchi = "d")
+)
+df_emp_2022
+```
+
+
+# Dedicated R Packages
+
+## `EDIutils`
+
+Package documentation: <https://docs.ropensci.org/EDIutils/> <br>
+Available on CRAN: <https://cloud.r-project.org/web/packages/EDIutils/index.html>
+
+### List data package revisions
+
+```{r ediutils package revisions}
+library(EDIutils)
+edi_emp_rev <- list_data_package_revisions(scope = "edi", identifier = 458)
+edi_emp_rev
+```
+
+### List data entities
+
+```{r ediutils data entities}
+edi_emp_id_latest <- paste0("edi.458.", max(edi_emp_rev))
+df_edi_emp_ent <- read_data_entity_names(edi_emp_id_latest)
+df_edi_emp_ent
+```
+
+### Import data entity
+
+```{r ediutils import data, message = FALSE}
+edi_emp_ent_id <- df_edi_emp_ent %>% filter(entityName == "EMP_DWQ_1975_2022") %>% pull(entityId)
+df_emp_2022_edi <- read_csv(read_data_entity(edi_emp_id_latest, edi_emp_ent_id))
+df_emp_2022_edi
+```
+
+
+## `dataRetreival`
+
+Package documentation: <https://doi-usgs.github.io/dataRetrieval/> <br>
+Available on CRAN: <https://cloud.r-project.org/web/packages/dataRetrieval/index.html>
+
+### Continuous data - instantaneous
+
+```{r usgs rtm instantaneous}
+library(dataRetrieval)
+df_srf_q_inst <- readNWISuv(
+  "11447650", "72137", 
+  startDate = "2024-01-01", endDate = "2024-01-31", 
+  tz = "America/Los_Angeles"
+)
+as_tibble(df_srf_q_inst)
+```
+
+### Continuous data - daily averages
+
+```{r usgs rtm daily avg}
+df_srf_q_davg <- readNWISdv("11447650", "72137", startDate = "2024-01-01", endDate = "2024-01-31")
+as_tibble(df_srf_q_davg)
+```
+
+### Discrete WQ data from WQP
+
+Import discrete water quality data from the Water Quality Portal (WQP)
+
+```{r usgs discrete wq}
+df_srf_wq <- readWQPqw("USGS-11447650", "70953", startDate = "2023-01-01", endDate = "2023-12-31")
+as_tibble(df_srf_wq) %>% 
+  select(MonitoringLocationIdentifier, ActivityStartDate, ActivityStartTime.Time,
+    CharacteristicName, ResultMeasureValue, ResultStatusIdentifier)
+```
+
+### Station Information
+
+```{r usgs station info}
+whatNWISsites(sites = "11447650")
+glimpse(whatWQPsites(siteid = "USGS-11447650"))
+```
+
+### Data availability
+
+```{r usgs data avail}
+glimpse(whatNWISdata(siteNumber = "11447650", service = c("uv", "dv")))
+readWQPsummary(siteid = "USGS-11447650") %>% 
+  filter(str_detect(CharacteristicName, "^Chlorophyll a"))
+```
+
+### USGS parameter codes
+
+```{r usgs param code info}
+parameterCdFile %>% 
+  filter(parameter_group_nm == "Physical") %>% 
+  as_tibble()
+
+as_tibble(pcode_to_name(c("00010", "00095", "00300", "00400", "63680")))
+```
+
+### USGS County and State codes
+
+```{r usgs county state codes}
+as_tibble(countyCd)
+as_tibble(stateCd)
+```
+
+More useful links for accessing USGS data through `dataRetreival`:
+
+* Parameter codes: <https://help.waterdata.usgs.gov/codes-and-parameters/parameters>
+* Stat (Statistic) codes: <https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html>
+
+
+## `cder`
+
+Package documentation: <https://hydroecology.net/cder/index.html> <br>
+Available on CRAN: <https://cran.r-project.org/web/packages/cder/index.html>
+
+### Import data
+
+```{r cder import data}
+library(cder)
+df_dto_2023 <- cdec_query(
+  stations = "DTO", sensors = 23, durations = "D", 
+  start.date = "2022-10-01", end.date = "2023-10-31"
+)
+df_dto_2023
+```
+
+### Station Information
+
+```{r cder station info, eval = FALSE}
+cdec_meta(station = "DTO")
+```
+
+
+# IEP Integrated Datasets
+
+## `deltafish`
+
+Available on GitHub: <https://github.com/Delta-Stewardship-Council/deltafish> <br>
+EDI data repository: <https://portal.edirepository.org/nis/mapbrowse?scope=edi&identifier=1075>
+
+```{r deltafish}
+# install.packages("devtools")
+# devtools::install_github("Delta-Stewardship-Council/deltafish")
+library(deltafish)
+# Build the database - this takes a while, use update = TRUE to re-build cached database
+create_fish_db()
+# Open two data files
+surv <- open_survey()
+fish <- open_fish()
+
+# Filter for sources and taxa of interest
+surv_FMWT <- surv %>% filter(Source == "FMWT") %>% select(SampleID, Date)
+fish_smelt <- fish %>% 
+    filter(Taxa %in% c("Dorosoma petenense", "Morone saxatilis", "Spirinchus thaleichthys"))
+
+# Join and collect the resulting data frame - collect executes the sql query and
+# gives you a table
+df_fish <- left_join(surv_FMWT, fish_smelt) %>% collect()
+df_fish
+```
+
+
+## `zooper`
+
+Available on GitHub: <https://github.com/InteragencyEcologicalProgram/zooper> <br>
+EDI data repository: <https://portal.edirepository.org/nis/mapbrowse?scope=edi&identifier=539>
+
+```{r zooper}
+# install.packages("devtools")
+# devtools::install_github("InteragencyEcologicalProgram/zooper")
+library(zooper)
+
+df_zoop <- Zoopsynther(
+  Data_type = "Community", Response = c("CPUE", "BPUE"),
+  Sources = c("EMP", "FRP", "FMWT"), Size_class = "Meso",
+  Date_range = c("1990-10-01", "2000-09-30")
+)
+df_zoop
+```
+
+
+## `discretewq`
+
+Available on GitHub: <https://github.com/InteragencyEcologicalProgram/discretewq> <br>
+EDI data repository: <https://portal.edirepository.org/nis/mapbrowse?scope=edi&identifier=731>
+
+```{r discretewq}
+# install.packages("devtools")
+# devtools::install_github("InteragencyEcologicalProgram/discretewq")
+library(discretewq)
+
+df_dwq <- wq(Sources = c("EMP", "NCRO", "USGS_CAWSC", "USGS_SFBS"), Start_year = 2020, End_year = 2022)
+df_dwq
+```
+
+
+## `deltamapr`
+
+Available on GitHub: <https://github.com/InteragencyEcologicalProgram/deltamapr>
+
+```{r deltamapr}
+# install.packages("devtools")
+# devtools::install_github("InteragencyEcologicalProgram/deltamapr")
+library(deltamapr)
+library(sf)
+WW_Delta
+```
+
+```{r wwdelta map}
+ggplot(WW_Delta) + geom_sf() + theme_bw()
+```
+
+
+# Web Scraping
+
+Package documentation: <https://rvest.tidyverse.org/index.html> <br>
+Available on CRAN: <https://cloud.r-project.org/web/packages/rvest/index.html>
+
+```{r web scraping}
+library(rvest)
+
+url_pforb <- "https://invasions.si.edu/nemesis/species_summary/-218"
+html_pforb <- read_html(url_pforb)
+html_elements(html_pforb, "table")
+
+df_pforb_traits <- html_elements(html_pforb, "table")[[3]] %>% html_table()
+df_pforb_traits
+```
+
+Use the SelectorGadget tool to find CSS selectors on a webpage: <https://selectorgadget.com/>
+
+
+# Extract data from .pdf
+
+Package documentation: <https://docs.ropensci.org/pdftools/> <br>
+Available on CRAN: <https://cloud.r-project.org/web/packages/pdftools/index.html>
+
+```{r extract data from pdf}
+library(pdftools)
+# Download Jan 2024 Delta Outflow Computation report from the USBR website to
+# the temporary R directory
+url_usbr_dout <- "https://www.usbr.gov/mp/cvo/vungvari/dout0124.pdf"
+download.file(url_usbr_dout, file.path(tempdir(), "Delta_Outflow_0124.pdf"), mode = "wb")
+usbr_pdf_txt <- pdf_text(file.path(tempdir(), "Delta_Outflow_0124.pdf")) %>% read_lines()
+usbr_pdf_txt
+
+# Keep "rows" 12-42 in the data and convert to a matrix with 23 columns
+usbr_pdf_mat <- usbr_pdf_txt[12:42] %>%
+  str_squish() %>%
+  str_split_fixed(pattern = " ", n = 23)
+usbr_pdf_mat
+
+# Keep the columns for Date, Export, and Outflow; rename them; convert to tibble
+usbr_pdf_mat2 <- usbr_pdf_mat[,c(1, 16, 18)]
+colnames(usbr_pdf_mat2) <- c("Date", "Export", "Outflow")
+df_usbr_dout <- as_tibble(usbr_pdf_mat2)
+df_usbr_dout
+```
+
+
