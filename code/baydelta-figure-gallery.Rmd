@@ -103,15 +103,124 @@ ggplot(data = watertemp) +
 
 # Fish Data
 
-## Fish cpue vs environmental data 
-
 ## Abundance index barplot or escapement barplot (year by abundance)
 
-## Salvage by year
+```{r}
+FMWTindices <- read_csv("https://filelib.wildlife.ca.gov/Public/TownetFallMidwaterTrawl/FMWT%20Data/FMWTindices.csv") %>%
+  janitor::clean_names()
 
-## cpue by region (zoop or fish)
+ggplot(FMWTindices) + 
+  geom_col(aes(x = factor(year), y = delta_smelt), fill = "steelblue4") +
+  geom_text(aes(x = factor(year), y = delta_smelt +100, label = delta_smelt, angle = 90)) + 
+  labs(y = "Delta Smelt Index") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90)) 
+```
+
+## DJFMP Data Examples
+
+### Sample size tile plot
+
+```{r}
+fishdata <- readRDS(here("data/processed/djfmp_data_2015-2019.rds")) %>%
+  mutate(fYear = factor(Year),
+         fMonth = factor(Month),
+         RegionCode = factor(RegionCode))
+
+unique_samples <- fishdata %>%
+  select(-ForkLength, -Count, -IEPFishCode) %>%
+  distinct() %>%
+  group_by(fYear, fMonth, RegionCode) %>%
+  summarize(n = n()) %>%
+  ungroup()
+
+ggplot(unique_samples) + 
+  geom_tile(aes(fYear, fMonth, fill = n), color = "black") +
+  facet_wrap(~RegionCode) +
+  labs(title = "Sample Size by Month, Year, Region") +
+  scale_fill_viridis(option = "plasma") + 
+  theme_classic()
+```
+### Fish cpue by year and month
+
+```{r}
+native_spp <- c("SACSUC", "HITCH", "SPLITT", "SACPIK")
+common_spp <- c("MISSIL", "BLUEGI", "WESMOS")
+
+daily_data <- fishdata %>%
+  filter(IEPFishCode %in% native_spp) %>%
+  mutate(CPUE = Count/Volume) %>%
+  group_by(SampleDate, StationCode) %>%
+  mutate(dailyCPUE = sum(CPUE)) %>%
+  ungroup() %>%
+  select(-Datetime, -ForkLength, -Count, -CPUE) %>%
+  distinct()
+
+monthly_data <- daily_data %>%
+  group_by(fYear, fMonth, IEPFishCode) %>%
+  summarize(meanCPUE = mean(dailyCPUE),
+            meanTemp = mean(WaterTemp))
+
+ggplot(monthly_data) +
+  geom_col(aes(factor(fMonth), meanCPUE, fill = factor(fYear))) +
+  facet_grid(factor(fYear)~IEPFishCode, scales = "free_y") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme_bw()
+
+
+```
+
+## Salvage by year
+```{r}
+
+```
+
+
+## cpue by region
+
+```{r}
+daily_data_all <- fishdata %>%
+  mutate(CPUE = Count/Volume) %>%
+  select(-Datetime, -ForkLength, -IEPFishCode, -Count) %>%
+  distinct() %>%
+  group_by(SampleDate, StationCode) %>%
+  mutate(dailyCPUE = sum(CPUE, na.rm = TRUE)) %>%
+  ungroup()%>%
+  select(-CPUE) %>%
+  distinct() 
+
+monthly_data_all <- daily_data_all %>%
+  group_by(fYear, fMonth, Month, Year, RegionCode) %>%
+  summarize(meanCPUE = mean(dailyCPUE)) %>% 
+  mutate(WY=if_else(Month>=10, Year + 1,Year))
+
+annual_data_all <- daily_data_all %>%
+  group_by(fYear,RegionCode) %>%
+  summarize(meanCPUE = mean(dailyCPUE))
+
+ggplot(monthly_data_all) + 
+  geom_col(aes(x = RegionCode, y = meanCPUE, fill = fMonth)) + 
+  facet_wrap(~fYear) + 
+  labs(title = "Mean Monthly CPUE across regions, 2015-2019") +
+  scale_fill_viridis(discrete = TRUE)
+```
 
 ## cpue by water year type  
+
+```{r}
+wytype <- read_csv(here::here("data/processed/wytype_1906_cur.csv")) %>%
+  rename(WY = Year)
+
+cpue_wytype <- left_join(monthly_data_all, wytype, by = "WY") 
+  group_by(WY) 
+  
+
+ggplot(cpue_wytype) + 
+  geom_col(aes(x = WY, y = meanCPUE, fill = Sac_WYtype)) + 
+  scale_fill_viridis(discrete = TRUE) +
+  theme_bw() 
+```
+
 
 ## cpue by action period/inundation period 
 
@@ -125,5 +234,10 @@ ggplot(data = watertemp) +
 
 * mapview
 * normal
+
+```{r}
+left_join()
+```
+
 
 ## Fish detections map
