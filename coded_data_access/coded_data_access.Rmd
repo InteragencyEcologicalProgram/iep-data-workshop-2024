@@ -21,7 +21,9 @@ library(tidyverse)
 ```
 
 
-# Simplist Method
+# Simple Methods
+
+## `read_csv()` with URL
 
 ```{r read csv dayflow, message = FALSE}
 library(readr)
@@ -32,14 +34,15 @@ df_dayflow_2023 <- read_csv(url_dayflow_2023)
 df_dayflow_2023
 ```
 
+## `download.file()` then import
+
 ```{r read csv edi, warning = FALSE, message = FALSE}
-url_edi_emp_2022 <- "https://portal.edirepository.org/nis/dataviewer?packageid=edi.458.10&entityid=cf231071093ac2861893793517db26f3"
 # Import data from EDI to temporary directory
+url_edi_emp_2022 <- "https://portal.edirepository.org/nis/dataviewer?packageid=edi.458.10&entityid=cf231071093ac2861893793517db26f3"
 download.file(url_edi_emp_2022, file.path(tempdir(), "EMP_DWQ_1975_2022.csv"), mode = "wb")
-df_emp_2022 <- read_csv(
-  file.path(tempdir(), "EMP_DWQ_1975_2022.csv"),
-  col_types = cols_only(Station = "c", Date = "c", Time = "c", Secchi = "d")
-)
+
+# Then import data using read_csv()
+df_emp_2022 <- read_csv(file.path(tempdir(), "EMP_DWQ_1975_2022.csv"))
 df_emp_2022
 ```
 
@@ -63,77 +66,112 @@ edi_emp_rev
 
 ```{r ediutils data entities}
 edi_emp_id_latest <- paste0("edi.458.", max(edi_emp_rev))
-df_edi_emp_ent <- read_data_entity_names(edi_emp_id_latest)
+df_edi_emp_ent <- read_data_entity_names(packageId = edi_emp_id_latest)
 df_edi_emp_ent
 ```
 
 ### Import data entity
 
 ```{r ediutils import data, message = FALSE}
-edi_emp_ent_id <- df_edi_emp_ent %>% filter(entityName == "EMP_DWQ_1975_2022") %>% pull(entityId)
-df_emp_2022_edi <- read_csv(read_data_entity(edi_emp_id_latest, edi_emp_ent_id))
+edi_emp_ent_id <- df_edi_emp_ent %>% 
+  filter(entityName == "EMP_DWQ_1975_2022") %>% 
+  pull(entityId)
+
+raw_emp_2022_edi <- read_data_entity(packageId = edi_emp_id_latest, entityId = edi_emp_ent_id)
+df_emp_2022_edi <- read_csv(raw_emp_2022_edi)
 df_emp_2022_edi
 ```
 
 
-## `dataRetreival`
+## `dataRetrieval`
 
 Package documentation: <https://doi-usgs.github.io/dataRetrieval/> <br>
 Available on CRAN: <https://cloud.r-project.org/web/packages/dataRetrieval/index.html>
 
-### Continuous data - instantaneous
-
-```{r usgs rtm instantaneous}
-library(dataRetrieval)
-df_srf_q_inst <- readNWISuv(
-  "11447650", "72137", 
-  startDate = "2024-01-01", endDate = "2024-01-31", 
-  tz = "America/Los_Angeles"
-)
-as_tibble(df_srf_q_inst)
-```
-
-### Continuous data - daily averages
-
-```{r usgs rtm daily avg}
-df_srf_q_davg <- readNWISdv("11447650", "72137", startDate = "2024-01-01", endDate = "2024-01-31")
-as_tibble(df_srf_q_davg)
-```
-
-### Discrete WQ data from WQP
-
-Import discrete water quality data from the Water Quality Portal (WQP)
-
-```{r usgs discrete wq}
-df_srf_wq <- readWQPqw("USGS-11447650", "70953", startDate = "2023-01-01", endDate = "2023-12-31")
-as_tibble(df_srf_wq) %>% 
-  select(MonitoringLocationIdentifier, ActivityStartDate, ActivityStartTime.Time,
-    CharacteristicName, ResultMeasureValue, ResultStatusIdentifier)
-```
-
 ### Station Information
 
+Sacramento River at Freeport CA (USGS station 11447650): <https://waterdata.usgs.gov/monitoring-location/11447650/>
+
 ```{r usgs station info}
+library(dataRetrieval)
+
 whatNWISsites(sites = "11447650")
-glimpse(whatWQPsites(siteid = "USGS-11447650"))
+whatWQPsites(siteid = "USGS-11447650")
 ```
 
-### Data availability
+### Data availability - NWIS
 
-```{r usgs data avail}
-glimpse(whatNWISdata(siteNumber = "11447650", service = c("uv", "dv")))
-readWQPsummary(siteid = "USGS-11447650") %>% 
-  filter(str_detect(CharacteristicName, "^Chlorophyll a"))
+```{r usgs data availability nwis}
+df_srf_uv_data_avail <- whatNWISdata(siteNumber = "11447650", service = "uv")
+glimpse(df_srf_uv_data_avail)
 ```
 
 ### USGS parameter codes
 
 ```{r usgs param code info}
-parameterCdFile %>% 
-  filter(parameter_group_nm == "Physical") %>% 
-  as_tibble()
+as_tibble(parameterCdFile) %>% 
+  filter(parameter_cd %in% unique(df_srf_uv_data_avail$parm_cd)) %>% 
+  select(parameter_cd, parameter_nm, parameter_units) %>% 
+  right_join(
+    select(df_srf_uv_data_avail, parm_cd, loc_web_ds, begin_date, end_date, count_nu),
+    by = join_by(parameter_cd == parm_cd)
+  )
+```
 
-as_tibble(pcode_to_name(c("00010", "00095", "00300", "00400", "63680")))
+### Continuous data - instantaneous
+
+```{r usgs rtm instantaneous}
+df_srf_spc_inst <- readNWISuv(
+  siteNumbers = "11447650",
+  parameterCd = "00095", 
+  startDate = "2023-01-01", endDate = "2023-12-31", 
+  tz = "America/Los_Angeles"
+)
+as_tibble(df_srf_spc_inst)
+```
+
+### Continuous data - daily averages
+
+```{r usgs rtm daily avg}
+df_srf_tfq_davg <- readNWISdv(
+  siteNumbers = "11447650",
+  parameterCd = "72137", 
+  startDate = "2023-01-01", endDate = "2023-12-31"
+)
+as_tibble(df_srf_tfq_davg)
+```
+
+### Data availability - WQP
+
+```{r usgs data availability wqp}
+df_srf_nutr_data_avail <- readWQPsummary(
+  siteid = "USGS-11447650", 
+  characteristicType = "Nutrient"
+)
+df_srf_nutr_data_avail
+
+df_srf_nutr_data_avail %>% summarize(
+  min_yr = min(YearSummarized),
+  max_yr = max(YearSummarized),
+  num_samp = sum(ResultCount),
+  .by = CharacteristicName
+)
+```
+
+### Discrete WQ data from WQP
+
+Import discrete nitrate data from the Water Quality Portal (WQP)
+
+```{r usgs discrete wq}
+df_srf_nitrate <- readWQPqw(
+  siteNumbers = "USGS-11447650",
+  parameterCd = "Nitrate", 
+  startDate = "2023-01-01", endDate = "2023-12-31", 
+  tz = "America/Los_Angeles"
+)
+as_tibble(df_srf_nitrate) %>% 
+  select(MonitoringLocationIdentifier, ActivityStartDateTime,
+    CharacteristicName, USGSPCode, ResultMeasureValue)
 ```
 
 ### USGS County and State codes
@@ -143,7 +181,7 @@ as_tibble(countyCd)
 as_tibble(stateCd)
 ```
 
-More useful links for accessing USGS data through `dataRetreival`:
+More useful links for accessing USGS data through `dataRetrieval`:
 
 * Parameter codes: <https://help.waterdata.usgs.gov/codes-and-parameters/parameters>
 * Stat (Statistic) codes: <https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html>
@@ -154,21 +192,24 @@ More useful links for accessing USGS data through `dataRetreival`:
 Package documentation: <https://hydroecology.net/cder/index.html> <br>
 Available on CRAN: <https://cran.r-project.org/web/packages/cder/index.html>
 
+### Station Information
+
+```{r load cder}
+library(cder)
+```
+
+```{r cder station info, eval = FALSE}
+cdec_meta(station = "FPT")
+```
+
 ### Import data
 
 ```{r cder import data}
-library(cder)
-df_dto_2023 <- cdec_query(
-  stations = "DTO", sensors = 23, durations = "D", 
-  start.date = "2022-10-01", end.date = "2023-10-31"
+df_fpt_turb <- cdec_query(
+  stations = "FPT", sensors = 221, durations = "E", 
+  start.date = "2024-03-01", end.date = "2024-03-31"
 )
-df_dto_2023
-```
-
-### Station Information
-
-```{r cder station info, eval = FALSE}
-cdec_meta(station = "DTO")
+df_fpt_turb
 ```
 
 
@@ -183,19 +224,22 @@ EDI data repository: <https://portal.edirepository.org/nis/mapbrowse?scope=edi&i
 # install.packages("devtools")
 # devtools::install_github("Delta-Stewardship-Council/deltafish")
 library(deltafish)
-# Build the database - this takes a while, use update = TRUE to re-build cached database
+# Build the database - this takes a while, use update = TRUE to 
+  # re-build cached database
 create_fish_db()
+
 # Open two data files
 surv <- open_survey()
 fish <- open_fish()
 
 # Filter for sources and taxa of interest
 surv_FMWT <- surv %>% filter(Source == "FMWT") %>% select(SampleID, Date)
-fish_smelt <- fish %>% 
-    filter(Taxa %in% c("Dorosoma petenense", "Morone saxatilis", "Spirinchus thaleichthys"))
 
-# Join and collect the resulting data frame - collect executes the sql query and
-# gives you a table
+fish_smelt <- fish %>% 
+  filter(Taxa %in% c("Dorosoma petenense", "Morone saxatilis", "Spirinchus thaleichthys"))
+
+# Join and collect the resulting data frame - collect executes 
+  # the SQL query and gives you a table
 df_fish <- left_join(surv_FMWT, fish_smelt) %>% collect()
 df_fish
 ```
@@ -230,7 +274,10 @@ EDI data repository: <https://portal.edirepository.org/nis/mapbrowse?scope=edi&i
 # devtools::install_github("InteragencyEcologicalProgram/discretewq")
 library(discretewq)
 
-df_dwq <- wq(Sources = c("EMP", "NCRO", "USGS_CAWSC", "USGS_SFBS"), Start_year = 2020, End_year = 2022)
+df_dwq <- wq(
+  Sources = c("EMP", "NCRO", "USGS_CAWSC", "USGS_SFBS"), 
+  Start_year = 2020, End_year = 2022
+)
 df_dwq
 ```
 
@@ -251,6 +298,7 @@ WW_Delta
 ggplot(WW_Delta) + geom_sf() + theme_bw()
 ```
 
+The following is additional info that's useful but not included in tutorial.
 
 # Web Scraping
 
