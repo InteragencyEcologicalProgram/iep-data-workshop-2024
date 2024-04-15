@@ -11,7 +11,7 @@
 
 <meta name="author" content="Dave Bosworth CA Department of Water Resources" />
 
-<meta name="date" content="2024-03-28" />
+<meta name="date" content="2024-04-11" />
 
 <title>Coded data access in R</title>
 
@@ -1582,7 +1582,7 @@ font-size: 0.95em;
 <h1 class="title toc-ignore">Coded data access in R</h1>
 <h4 class="author">Dave Bosworth<br>CA Department of Water
 Resources</h4>
-<h4 class="date">March 28, 2024</h4>
+<h4 class="date">April 11, 2024</h4>
 
 </div>
 
@@ -1598,8 +1598,10 @@ Resources</h4>
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
 ## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-<div id="simplist-method" class="section level1">
-<h1>Simplist Method</h1>
+<div id="simple-methods" class="section level1">
+<h1>Simple Methods</h1>
+<div id="read_csv-with-url" class="section level2">
+<h2><code>read_csv()</code> with URL</h2>
 <pre class="r"><code>library(readr)
 
 # Import data from a URL using read_csv()
@@ -1623,28 +1625,37 @@ df_dayflow_2023</code></pre>
 ## # ℹ 16 more variables: CVP &lt;dbl&gt;, NBAQ &lt;dbl&gt;, EXPORTS &lt;dbl&gt;, GCD &lt;dbl&gt;,
 ## #   PREC &lt;dbl&gt;, MISDV &lt;dbl&gt;, CD &lt;dbl&gt;, XGEO &lt;dbl&gt;, WEST &lt;dbl&gt;, RIO &lt;dbl&gt;,
 ## #   OUT &lt;dbl&gt;, EXPIN &lt;dbl&gt;, DIVER &lt;dbl&gt;, EFFEC &lt;dbl&gt;, EFFDIV &lt;dbl&gt;, X2 &lt;dbl&gt;</code></pre>
-<pre class="r"><code>url_edi_emp_2022 &lt;- &quot;https://portal.edirepository.org/nis/dataviewer?packageid=edi.458.10&amp;entityid=cf231071093ac2861893793517db26f3&quot;
-# Import data from EDI to temporary directory
+</div>
+<div id="download.file-then-import" class="section level2">
+<h2><code>download.file()</code> then import</h2>
+<pre class="r"><code># Import data from EDI to temporary directory
+url_edi_emp_2022 &lt;- &quot;https://portal.edirepository.org/nis/dataviewer?packageid=edi.458.10&amp;entityid=cf231071093ac2861893793517db26f3&quot;
 download.file(url_edi_emp_2022, file.path(tempdir(), &quot;EMP_DWQ_1975_2022.csv&quot;), mode = &quot;wb&quot;)
-df_emp_2022 &lt;- read_csv(
-  file.path(tempdir(), &quot;EMP_DWQ_1975_2022.csv&quot;),
-  col_types = cols_only(Station = &quot;c&quot;, Date = &quot;c&quot;, Time = &quot;c&quot;, Secchi = &quot;d&quot;)
-)
+
+# Then import data using read_csv()
+df_emp_2022 &lt;- read_csv(file.path(tempdir(), &quot;EMP_DWQ_1975_2022.csv&quot;))
 df_emp_2022</code></pre>
-<pre><code>## # A tibble: 17,366 × 4
-##    Station Date       Time     Secchi
-##    &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt;     &lt;dbl&gt;
-##  1 D11     1975-01-07 13:00:00     51
-##  2 D15     1975-01-07 14:00:00     64
-##  3 D16     1975-01-07 16:00:00     53
-##  4 D19     1975-01-07 15:00:00     61
-##  5 D22     1975-01-07 13:00:00     53
-##  6 D24     1975-01-07 14:00:00     61
-##  7 D26     1975-01-07 15:00:00     61
-##  8 D4      1975-01-07 12:00:00     51
-##  9 D10     1975-01-08 13:00:00     33
-## 10 D12     1975-01-08 14:00:00     41
-## # ℹ 17,356 more rows</code></pre>
+<pre><code>## # A tibble: 17,366 × 73
+##    Station Date       Time   SampleDescription Flag  FlagDescription FieldNotes
+##    &lt;chr&gt;   &lt;date&gt;     &lt;time&gt; &lt;chr&gt;             &lt;chr&gt; &lt;chr&gt;           &lt;chr&gt;     
+##  1 D11     1975-01-07 13:00  &lt;NA&gt;              &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;      
+##  2 D15     1975-01-07 14:00  &lt;NA&gt;              &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;      
+##  3 D16     1975-01-07 16:00  &lt;NA&gt;              &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;      
+##  4 D19     1975-01-07 15:00  &lt;NA&gt;              &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;      
+##  5 D22     1975-01-07 13:00  &lt;NA&gt;              &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;      
+##  6 D24     1975-01-07 14:00  &lt;NA&gt;              &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;      
+##  7 D26     1975-01-07 15:00  &lt;NA&gt;              &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;      
+##  8 D4      1975-01-07 12:00  &lt;NA&gt;              &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;      
+##  9 D10     1975-01-08 13:00  &lt;NA&gt;              &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;      
+## 10 D12     1975-01-08 14:00  &lt;NA&gt;              &lt;NA&gt;  &lt;NA&gt;            &lt;NA&gt;      
+## # ℹ 17,356 more rows
+## # ℹ 66 more variables: Weather &lt;chr&gt;, AirTemp &lt;dbl&gt;, WindVelocity &lt;dbl&gt;,
+## #   WindDirection &lt;dbl&gt;, NorthLat &lt;dbl&gt;, WestLong &lt;dbl&gt;, Chla_Sign &lt;chr&gt;,
+## #   Chla &lt;dbl&gt;, Pheophytin_Sign &lt;chr&gt;, Pheophytin &lt;dbl&gt;,
+## #   TotAlkalinity_Sign &lt;chr&gt;, TotAlkalinity &lt;dbl&gt;, TotAmmonia_Sign &lt;chr&gt;,
+## #   TotAmmonia &lt;dbl&gt;, DissAmmonia_Sign &lt;chr&gt;, DissAmmonia &lt;dbl&gt;,
+## #   DissBromide_Sign &lt;chr&gt;, DissBromide &lt;dbl&gt;, DissCalcium_Sign &lt;chr&gt;, …</code></pre>
+</div>
 </div>
 <div id="dedicated-r-packages" class="section level1">
 <h1>Dedicated R Packages</h1>
@@ -1662,7 +1673,7 @@ edi_emp_rev</code></pre>
 <div id="list-data-entities" class="section level3">
 <h3>List data entities</h3>
 <pre class="r"><code>edi_emp_id_latest &lt;- paste0(&quot;edi.458.&quot;, max(edi_emp_rev))
-df_edi_emp_ent &lt;- read_data_entity_names(edi_emp_id_latest)
+df_edi_emp_ent &lt;- read_data_entity_names(packageId = edi_emp_id_latest)
 df_edi_emp_ent</code></pre>
 <pre><code>##                           entityId                 entityName
 ## 1 cf231071093ac2861893793517db26f3          EMP_DWQ_1975_2022
@@ -1672,8 +1683,12 @@ df_edi_emp_ent</code></pre>
 </div>
 <div id="import-data-entity" class="section level3">
 <h3>Import data entity</h3>
-<pre class="r"><code>edi_emp_ent_id &lt;- df_edi_emp_ent %&gt;% filter(entityName == &quot;EMP_DWQ_1975_2022&quot;) %&gt;% pull(entityId)
-df_emp_2022_edi &lt;- read_csv(read_data_entity(edi_emp_id_latest, edi_emp_ent_id))
+<pre class="r"><code>edi_emp_ent_id &lt;- df_edi_emp_ent %&gt;% 
+  filter(entityName == &quot;EMP_DWQ_1975_2022&quot;) %&gt;% 
+  pull(entityId)
+
+raw_emp_2022_edi &lt;- read_data_entity(packageId = edi_emp_id_latest, entityId = edi_emp_ent_id)
+df_emp_2022_edi &lt;- read_csv(raw_emp_2022_edi)
 df_emp_2022_edi</code></pre>
 <pre><code>## # A tibble: 17,366 × 73
 ##    Station Date       Time   SampleDescription Flag  FlagDescription FieldNotes
@@ -1697,140 +1712,38 @@ df_emp_2022_edi</code></pre>
 ## #   DissBromide_Sign &lt;chr&gt;, DissBromide &lt;dbl&gt;, DissCalcium_Sign &lt;chr&gt;, …</code></pre>
 </div>
 </div>
-<div id="dataretreival" class="section level2">
-<h2><code>dataRetreival</code></h2>
+<div id="dataretrieval" class="section level2">
+<h2><code>dataRetrieval</code></h2>
 <p>Package documentation: <a href="https://doi-usgs.github.io/dataRetrieval/" class="uri">https://doi-usgs.github.io/dataRetrieval/</a> <br> Available
 on CRAN: <a href="https://cloud.r-project.org/web/packages/dataRetrieval/index.html" class="uri">https://cloud.r-project.org/web/packages/dataRetrieval/index.html</a></p>
-<div id="continuous-data---instantaneous" class="section level3">
-<h3>Continuous data - instantaneous</h3>
-<pre class="r"><code>library(dataRetrieval)
-df_srf_q_inst &lt;- readNWISuv(
-  &quot;11447650&quot;, &quot;72137&quot;, 
-  startDate = &quot;2024-01-01&quot;, endDate = &quot;2024-01-31&quot;, 
-  tz = &quot;America/Los_Angeles&quot;
-)
-as_tibble(df_srf_q_inst)</code></pre>
-<pre><code>## # A tibble: 744 × 6
-##    agency_cd site_no  dateTime            X_72137_00000 X_72137_00000_cd tz_cd  
-##    &lt;chr&gt;     &lt;chr&gt;    &lt;dttm&gt;                      &lt;dbl&gt; &lt;chr&gt;            &lt;chr&gt;  
-##  1 USGS      11447650 2024-01-01 00:00:00         21000 P                Americ…
-##  2 USGS      11447650 2024-01-01 01:00:00         21200 P                Americ…
-##  3 USGS      11447650 2024-01-01 02:00:00         21300 P                Americ…
-##  4 USGS      11447650 2024-01-01 03:00:00         21500 P                Americ…
-##  5 USGS      11447650 2024-01-01 04:00:00         21600 P                Americ…
-##  6 USGS      11447650 2024-01-01 05:00:00         21800 P                Americ…
-##  7 USGS      11447650 2024-01-01 06:00:00         21900 P                Americ…
-##  8 USGS      11447650 2024-01-01 07:00:00         22000 P                Americ…
-##  9 USGS      11447650 2024-01-01 08:00:00         22200 P                Americ…
-## 10 USGS      11447650 2024-01-01 09:00:00         22300 P                Americ…
-## # ℹ 734 more rows</code></pre>
-</div>
-<div id="continuous-data---daily-averages" class="section level3">
-<h3>Continuous data - daily averages</h3>
-<pre class="r"><code>df_srf_q_davg &lt;- readNWISdv(&quot;11447650&quot;, &quot;72137&quot;, startDate = &quot;2024-01-01&quot;, endDate = &quot;2024-01-31&quot;)
-as_tibble(df_srf_q_davg)</code></pre>
-<pre><code>## # A tibble: 31 × 5
-##    agency_cd site_no  Date       X_72137_00003 X_72137_00003_cd
-##    &lt;chr&gt;     &lt;chr&gt;    &lt;date&gt;             &lt;dbl&gt; &lt;chr&gt;           
-##  1 USGS      11447650 2024-01-01         22500 P               
-##  2 USGS      11447650 2024-01-02         23400 P               
-##  3 USGS      11447650 2024-01-03         22200 P               
-##  4 USGS      11447650 2024-01-04         21000 P               
-##  5 USGS      11447650 2024-01-05         20900 P               
-##  6 USGS      11447650 2024-01-06         20800 P               
-##  7 USGS      11447650 2024-01-07         19700 P               
-##  8 USGS      11447650 2024-01-08         18300 P               
-##  9 USGS      11447650 2024-01-09         17400 P               
-## 10 USGS      11447650 2024-01-10         16700 P               
-## # ℹ 21 more rows</code></pre>
-</div>
-<div id="discrete-wq-data-from-wqp" class="section level3">
-<h3>Discrete WQ data from WQP</h3>
-<p>Import discrete water quality data from the Water Quality Portal
-(WQP)</p>
-<pre class="r"><code>df_srf_wq &lt;- readWQPqw(&quot;USGS-11447650&quot;, &quot;70953&quot;, startDate = &quot;2023-01-01&quot;, endDate = &quot;2023-12-31&quot;)</code></pre>
-<pre><code>## NEWS: USGS data availability and format are changing. 
-## Beginning in mid-March 2024 the data obtained from legacy profiles
-## will not include new USGS data or recent updates to existing data. 
-## To view the status of changes in data availability and code functionality, visit:
-## https://doi-usgs.github.io/dataRetrieval/articles/Status.html
-## If you have additional questions about these changes, 
-## email CompTools@usgs.gov.</code></pre>
-<pre class="r"><code>as_tibble(df_srf_wq) %&gt;% 
-  select(MonitoringLocationIdentifier, ActivityStartDate, ActivityStartTime.Time,
-    CharacteristicName, ResultMeasureValue, ResultStatusIdentifier)</code></pre>
-<pre><code>## # A tibble: 14 × 6
-##    MonitoringLocationIdentifier ActivityStartDate ActivityStartTime.Time
-##    &lt;chr&gt;                        &lt;date&gt;            &lt;chr&gt;                 
-##  1 USGS-11447650                2023-01-04        10:15:00              
-##  2 USGS-11447650                2023-01-11        08:45:00              
-##  3 USGS-11447650                2023-02-07        13:15:00              
-##  4 USGS-11447650                2023-03-21        09:30:00              
-##  5 USGS-11447650                2023-04-25        10:45:00              
-##  6 USGS-11447650                2023-05-18        10:20:00              
-##  7 USGS-11447650                2023-06-06        11:30:00              
-##  8 USGS-11447650                2023-07-20        13:47:00              
-##  9 USGS-11447650                2023-08-07        09:45:00              
-## 10 USGS-11447650                2023-09-12        08:45:00              
-## 11 USGS-11447650                2023-10-10        09:15:00              
-## 12 USGS-11447650                2023-11-02        13:40:00              
-## 13 USGS-11447650                2023-11-14        14:00:00              
-## 14 USGS-11447650                2023-12-11        13:45:00              
-## # ℹ 3 more variables: CharacteristicName &lt;chr&gt;, ResultMeasureValue &lt;dbl&gt;,
-## #   ResultStatusIdentifier &lt;chr&gt;</code></pre>
-</div>
 <div id="station-information" class="section level3">
 <h3>Station Information</h3>
-<pre class="r"><code>whatNWISsites(sites = &quot;11447650&quot;)</code></pre>
+<p>Sacramento River at Freeport CA (USGS station 11447650): <a href="https://waterdata.usgs.gov/monitoring-location/11447650/" class="uri">https://waterdata.usgs.gov/monitoring-location/11447650/</a></p>
+<pre class="r"><code>library(dataRetrieval)
+
+whatNWISsites(sites = &quot;11447650&quot;)</code></pre>
 <pre><code>##   agency_cd  site_no                 station_nm site_tp_cd dec_lat_va
 ## 1      USGS 11447650 SACRAMENTO R A FREEPORT CA         ST   38.45566
 ##   dec_long_va colocated           queryTime
-## 1   -121.5016     FALSE 2024-03-28 11:00:49</code></pre>
-<pre class="r"><code>glimpse(whatWQPsites(siteid = &quot;USGS-11447650&quot;))</code></pre>
-<pre><code>## Rows: 1
-## Columns: 37
-## $ OrganizationIdentifier                          &lt;chr&gt; &quot;USGS-CA&quot;
-## $ OrganizationFormalName                          &lt;chr&gt; &quot;USGS California Water…
-## $ MonitoringLocationIdentifier                    &lt;chr&gt; &quot;USGS-11447650&quot;
-## $ MonitoringLocationName                          &lt;chr&gt; &quot;SACRAMENTO R A FREEPO…
-## $ MonitoringLocationTypeName                      &lt;chr&gt; &quot;Stream&quot;
-## $ MonitoringLocationDescriptionText               &lt;chr&gt; NA
-## $ HUCEightDigitCode                               &lt;chr&gt; &quot;18020163&quot;
-## $ DrainageAreaMeasure.MeasureValue                &lt;dbl&gt; NA
-## $ DrainageAreaMeasure.MeasureUnitCode             &lt;chr&gt; NA
-## $ ContributingDrainageAreaMeasure.MeasureValue    &lt;dbl&gt; NA
-## $ ContributingDrainageAreaMeasure.MeasureUnitCode &lt;chr&gt; NA
-## $ LatitudeMeasure                                 &lt;chr&gt; &quot;38.45566389000000&quot;
-## $ LongitudeMeasure                                &lt;chr&gt; &quot;-121.5016167000000&quot;
-## $ SourceMapScaleNumeric                           &lt;chr&gt; &quot;24000&quot;
-## $ HorizontalAccuracyMeasure.MeasureValue          &lt;dbl&gt; 0.5
-## $ HorizontalAccuracyMeasure.MeasureUnitCode       &lt;chr&gt; &quot;seconds&quot;
-## $ HorizontalCollectionMethodName                  &lt;chr&gt; &quot;Interpolated from MAP…
-## $ HorizontalCoordinateReferenceSystemDatumName    &lt;chr&gt; &quot;NAD83&quot;
-## $ VerticalMeasure.MeasureValue                    &lt;dbl&gt; NA
-## $ VerticalMeasure.MeasureUnitCode                 &lt;chr&gt; NA
-## $ VerticalAccuracyMeasure.MeasureValue            &lt;dbl&gt; NA
-## $ VerticalAccuracyMeasure.MeasureUnitCode         &lt;chr&gt; NA
-## $ VerticalCollectionMethodName                    &lt;chr&gt; NA
-## $ VerticalCoordinateReferenceSystemDatumName      &lt;chr&gt; NA
-## $ CountryCode                                     &lt;chr&gt; &quot;US&quot;
-## $ StateCode                                       &lt;chr&gt; &quot;06&quot;
-## $ CountyCode                                      &lt;chr&gt; &quot;067&quot;
-## $ AquiferName                                     &lt;chr&gt; NA
-## $ LocalAqfrName                                   &lt;chr&gt; NA
-## $ FormationTypeText                               &lt;chr&gt; NA
-## $ AquiferTypeName                                 &lt;chr&gt; NA
-## $ ConstructionDateText                            &lt;chr&gt; NA
-## $ WellDepthMeasure.MeasureValue                   &lt;dbl&gt; NA
-## $ WellDepthMeasure.MeasureUnitCode                &lt;chr&gt; NA
-## $ WellHoleDepthMeasure.MeasureValue               &lt;dbl&gt; NA
-## $ WellHoleDepthMeasure.MeasureUnitCode            &lt;chr&gt; NA
-## $ ProviderName                                    &lt;chr&gt; &quot;NWIS&quot;</code></pre>
+## 1   -121.5016     FALSE 2024-04-11 15:34:24</code></pre>
+<pre class="r"><code>whatWQPsites(siteid = &quot;USGS-11447650&quot;)</code></pre>
+<pre><code>## # A tibble: 1 × 37
+##   OrganizationIdentifier OrganizationFormalName           MonitoringLocationId…¹
+##   &lt;chr&gt;                  &lt;chr&gt;                            &lt;chr&gt;                 
+## 1 USGS-CA                USGS California Water Science C… USGS-11447650         
+## # ℹ abbreviated name: ¹​MonitoringLocationIdentifier
+## # ℹ 34 more variables: MonitoringLocationName &lt;chr&gt;,
+## #   MonitoringLocationTypeName &lt;chr&gt;, MonitoringLocationDescriptionText &lt;chr&gt;,
+## #   HUCEightDigitCode &lt;chr&gt;, DrainageAreaMeasure.MeasureValue &lt;dbl&gt;,
+## #   DrainageAreaMeasure.MeasureUnitCode &lt;chr&gt;,
+## #   ContributingDrainageAreaMeasure.MeasureValue &lt;dbl&gt;,
+## #   ContributingDrainageAreaMeasure.MeasureUnitCode &lt;chr&gt;, …</code></pre>
 </div>
-<div id="data-availability" class="section level3">
-<h3>Data availability</h3>
-<pre class="r"><code>glimpse(whatNWISdata(siteNumber = &quot;11447650&quot;, service = c(&quot;uv&quot;, &quot;dv&quot;)))</code></pre>
-<pre><code>## Rows: 23
+<div id="data-availability---nwis" class="section level3">
+<h3>Data availability - NWIS</h3>
+<pre class="r"><code>df_srf_uv_data_avail &lt;- whatNWISdata(siteNumber = &quot;11447650&quot;, service = &quot;uv&quot;)
+glimpse(df_srf_uv_data_avail)</code></pre>
+<pre><code>## Rows: 15
 ## Columns: 24
 ## $ agency_cd          &lt;chr&gt; &quot;USGS&quot;, &quot;USGS&quot;, &quot;USGS&quot;, &quot;USGS&quot;, &quot;USGS&quot;, &quot;USGS&quot;, &quot;US…
 ## $ site_no            &lt;chr&gt; &quot;11447650&quot;, &quot;11447650&quot;, &quot;11447650&quot;, &quot;11447650&quot;, &quot;11…
@@ -1844,20 +1757,101 @@ as_tibble(df_srf_q_davg)</code></pre>
 ## $ alt_acy_va         &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
 ## $ alt_datum_cd       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
 ## $ huc_cd             &lt;chr&gt; &quot;18020163&quot;, &quot;18020163&quot;, &quot;18020163&quot;, &quot;18020163&quot;, &quot;18…
-## $ data_type_cd       &lt;chr&gt; &quot;dv&quot;, &quot;dv&quot;, &quot;dv&quot;, &quot;dv&quot;, &quot;dv&quot;, &quot;dv&quot;, &quot;dv&quot;, &quot;uv&quot;, &quot;uv…
-## $ parm_cd            &lt;chr&gt; &quot;00010&quot;, &quot;00010&quot;, &quot;00010&quot;, &quot;00060&quot;, &quot;72137&quot;, &quot;80154…
-## $ stat_cd            &lt;chr&gt; &quot;00001&quot;, &quot;00002&quot;, &quot;00003&quot;, &quot;00003&quot;, &quot;00003&quot;, &quot;00003…
-## $ ts_id              &lt;chr&gt; &quot;10998&quot;, &quot;10999&quot;, &quot;234738&quot;, &quot;166794&quot;, &quot;11009&quot;, &quot;225…
-## $ loc_web_ds         &lt;chr&gt; &quot;[Right Bank Pump Stand]&quot;, &quot;[Right Bank Pump Stand]…
+## $ data_type_cd       &lt;chr&gt; &quot;uv&quot;, &quot;uv&quot;, &quot;uv&quot;, &quot;uv&quot;, &quot;uv&quot;, &quot;uv&quot;, &quot;uv&quot;, &quot;uv&quot;, &quot;uv…
+## $ parm_cd            &lt;chr&gt; &quot;00010&quot;, &quot;00010&quot;, &quot;00060&quot;, &quot;00065&quot;, &quot;00095&quot;, &quot;00300…
+## $ stat_cd            &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ ts_id              &lt;chr&gt; &quot;15731&quot;, &quot;15760&quot;, &quot;236032&quot;, &quot;15738&quot;, &quot;236034&quot;, &quot;157…
+## $ loc_web_ds         &lt;chr&gt; &quot;[Right Bank Pump Stand]&quot;, &quot;BGC PROJECT, [East Fend…
 ## $ medium_grp_cd      &lt;chr&gt; &quot;wat&quot;, &quot;wat&quot;, &quot;wat&quot;, &quot;wat&quot;, &quot;wat&quot;, &quot;wat&quot;, &quot;wat&quot;, &quot;w…
 ## $ parm_grp_cd        &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ srs_id             &lt;chr&gt; &quot;1645597&quot;, &quot;1645597&quot;, &quot;1645597&quot;, &quot;1645423&quot;, &quot;0&quot;, &quot;1…
+## $ srs_id             &lt;chr&gt; &quot;1645597&quot;, &quot;1645597&quot;, &quot;1645423&quot;, &quot;17164583&quot;, &quot;16466…
 ## $ access_cd          &lt;chr&gt; &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;…
-## $ begin_date         &lt;date&gt; 1961-10-01, 1961-10-01, 1972-04-28, 1948-10-01, 20…
-## $ end_date           &lt;date&gt; 2023-03-22, 2023-03-22, 2023-03-22, 2015-09-30, 20…
-## $ count_nu           &lt;dbl&gt; 20986, 20924, 10243, 24471, 3100, 23138, 23721, 602…</code></pre>
-<pre class="r"><code>readWQPsummary(siteid = &quot;USGS-11447650&quot;) %&gt;% 
-  filter(str_detect(CharacteristicName, &quot;^Chlorophyll a&quot;))</code></pre>
+## $ begin_date         &lt;date&gt; 2007-10-01, 2013-08-30, 2007-10-01, 2007-10-01, 20…
+## $ end_date           &lt;date&gt; 2024-04-11, 2024-04-11, 2024-04-11, 2024-04-11, 20…
+## $ count_nu           &lt;dbl&gt; 6037, 3877, 6037, 6037, 3877, 3877, 3877, 3877, 387…</code></pre>
+</div>
+<div id="usgs-parameter-codes" class="section level3">
+<h3>USGS parameter codes</h3>
+<pre class="r"><code>as_tibble(parameterCdFile) %&gt;% 
+  filter(parameter_cd %in% unique(df_srf_uv_data_avail$parm_cd)) %&gt;% 
+  select(parameter_cd, parameter_nm, parameter_units) %&gt;% 
+  right_join(
+    select(df_srf_uv_data_avail, parm_cd, loc_web_ds, begin_date, end_date, count_nu),
+    by = join_by(parameter_cd == parm_cd)
+  )</code></pre>
+<pre><code>## # A tibble: 15 × 7
+##    parameter_cd parameter_nm    parameter_units loc_web_ds begin_date end_date  
+##    &lt;chr&gt;        &lt;chr&gt;           &lt;chr&gt;           &lt;chr&gt;      &lt;date&gt;     &lt;date&gt;    
+##  1 00010        Temperature, w… deg C           [Right Ba… 2007-10-01 2024-04-11
+##  2 00010        Temperature, w… deg C           BGC PROJE… 2013-08-30 2024-04-11
+##  3 00060        Discharge, cub… ft3/s           &lt;NA&gt;       2007-10-01 2024-04-11
+##  4 00065        Gage height, f… ft              [PRIMARY]  2007-10-01 2024-04-11
+##  5 00095        Specific condu… uS/cm @25C      BGC PROJE… 2013-08-30 2024-04-11
+##  6 00300        Dissolved oxyg… mg/l            BGC PROJE… 2013-08-30 2024-04-11
+##  7 00301        Dissolved oxyg… % saturatn      BGC PROJE… 2013-08-30 2024-04-11
+##  8 00400        pH, water, unf… std units       BGC PROJE… 2013-08-30 2024-04-11
+##  9 00480        Salinity, wate… ppth            BGC PROJE… 2013-08-30 2024-04-11
+## 10 32295        Dissolved orga… ug/l QSE        BGC PROJE… 2021-04-12 2024-04-11
+## 11 32316        Chlorophyll fl… ug/l            BGC PROJE… 2013-08-30 2024-04-11
+## 12 63680        Turbidity, wat… FNU             MEDIAN TS… 2009-12-03 2013-10-01
+## 13 63680        Turbidity, wat… FNU             BGC PROJE… 2013-08-30 2024-04-11
+## 14 72137        Discharge, tid… ft3/s           &lt;NA&gt;       2015-10-01 2024-04-10
+## 15 72255        Mean water vel… ft/sec          &lt;NA&gt;       2015-10-01 2024-04-11
+## # ℹ 1 more variable: count_nu &lt;dbl&gt;</code></pre>
+</div>
+<div id="continuous-data---instantaneous" class="section level3">
+<h3>Continuous data - instantaneous</h3>
+<pre class="r"><code>df_srf_spc_inst &lt;- readNWISuv(
+  siteNumbers = &quot;11447650&quot;,
+  parameterCd = &quot;00095&quot;, 
+  startDate = &quot;2023-01-01&quot;, endDate = &quot;2023-12-31&quot;, 
+  tz = &quot;America/Los_Angeles&quot;
+)
+as_tibble(df_srf_spc_inst)</code></pre>
+<pre><code>## # A tibble: 34,216 × 6
+##    agency_cd site_no  dateTime            X_00095_00000 X_00095_00000_cd tz_cd  
+##    &lt;chr&gt;     &lt;chr&gt;    &lt;dttm&gt;                      &lt;dbl&gt; &lt;chr&gt;            &lt;chr&gt;  
+##  1 USGS      11447650 2023-01-01 00:00:00           122 P                Americ…
+##  2 USGS      11447650 2023-01-01 00:15:00           121 P                Americ…
+##  3 USGS      11447650 2023-01-01 00:30:00           121 P                Americ…
+##  4 USGS      11447650 2023-01-01 00:45:00           120 P                Americ…
+##  5 USGS      11447650 2023-01-01 01:00:00           120 P                Americ…
+##  6 USGS      11447650 2023-01-01 01:15:00           120 P                Americ…
+##  7 USGS      11447650 2023-01-01 01:30:00           119 P                Americ…
+##  8 USGS      11447650 2023-01-01 01:45:00           119 P                Americ…
+##  9 USGS      11447650 2023-01-01 02:00:00           118 P                Americ…
+## 10 USGS      11447650 2023-01-01 02:15:00           117 P                Americ…
+## # ℹ 34,206 more rows</code></pre>
+</div>
+<div id="continuous-data---daily-averages" class="section level3">
+<h3>Continuous data - daily averages</h3>
+<pre class="r"><code>df_srf_tfq_davg &lt;- readNWISdv(
+  siteNumbers = &quot;11447650&quot;,
+  parameterCd = &quot;72137&quot;, 
+  startDate = &quot;2023-01-01&quot;, endDate = &quot;2023-12-31&quot;
+)
+as_tibble(df_srf_tfq_davg)</code></pre>
+<pre><code>## # A tibble: 365 × 5
+##    agency_cd site_no  Date       X_72137_00003 X_72137_00003_cd
+##    &lt;chr&gt;     &lt;chr&gt;    &lt;date&gt;             &lt;dbl&gt; &lt;chr&gt;           
+##  1 USGS      11447650 2023-01-01         56300 A               
+##  2 USGS      11447650 2023-01-02         67700 A               
+##  3 USGS      11447650 2023-01-03         70500 A               
+##  4 USGS      11447650 2023-01-04         67400 A               
+##  5 USGS      11447650 2023-01-05         65000 A               
+##  6 USGS      11447650 2023-01-06         67900 A               
+##  7 USGS      11447650 2023-01-07         73800 A               
+##  8 USGS      11447650 2023-01-08         78700 A               
+##  9 USGS      11447650 2023-01-09         79800 A               
+## 10 USGS      11447650 2023-01-10         79900 A               
+## # ℹ 355 more rows</code></pre>
+</div>
+<div id="data-availability---wqp" class="section level3">
+<h3>Data availability - WQP</h3>
+<pre class="r"><code>df_srf_nutr_data_avail &lt;- readWQPsummary(
+  siteid = &quot;USGS-11447650&quot;, 
+  characteristicType = &quot;Nutrient&quot;
+)</code></pre>
 <pre><code>## NEWS: USGS data availability and format are changing. 
 ## Beginning in mid-March 2024 the data obtained from legacy profiles
 ## will not include new USGS data or recent updates to existing data. 
@@ -1865,66 +1859,84 @@ as_tibble(df_srf_q_davg)</code></pre>
 ## https://doi-usgs.github.io/dataRetrieval/articles/Status.html
 ## If you have additional questions about these changes, 
 ## email CompTools@usgs.gov.</code></pre>
-<pre><code>## # A tibble: 18 × 19
-##    Provider MonitoringLocationIdentifier YearSummarized CharacteristicType      
-##    &lt;chr&gt;    &lt;chr&gt;                                 &lt;dbl&gt; &lt;chr&gt;                   
-##  1 NWIS     USGS-11447650                          1974 Biological, Algae, Phyt…
-##  2 NWIS     USGS-11447650                          1975 Biological, Algae, Phyt…
-##  3 NWIS     USGS-11447650                          1976 Biological, Algae, Phyt…
-##  4 NWIS     USGS-11447650                          1976 Biological, Algae, Phyt…
-##  5 NWIS     USGS-11447650                          1977 Biological, Algae, Phyt…
-##  6 NWIS     USGS-11447650                          1978 Biological, Algae, Phyt…
-##  7 NWIS     USGS-11447650                          1979 Biological, Algae, Phyt…
-##  8 NWIS     USGS-11447650                          1980 Biological, Algae, Phyt…
-##  9 NWIS     USGS-11447650                          2015 Biological, Algae, Phyt…
-## 10 NWIS     USGS-11447650                          2016 Biological, Algae, Phyt…
-## 11 NWIS     USGS-11447650                          2017 Biological, Algae, Phyt…
-## 12 NWIS     USGS-11447650                          2018 Biological, Algae, Phyt…
-## 13 NWIS     USGS-11447650                          2019 Biological, Algae, Phyt…
-## 14 NWIS     USGS-11447650                          2020 Biological, Algae, Phyt…
-## 15 NWIS     USGS-11447650                          2021 Biological, Algae, Phyt…
-## 16 NWIS     USGS-11447650                          2022 Biological, Algae, Phyt…
-## 17 NWIS     USGS-11447650                          2023 Biological, Algae, Phyt…
-## 18 NWIS     USGS-11447650                          2024 Biological, Algae, Phyt…
+<pre class="r"><code>df_srf_nutr_data_avail</code></pre>
+<pre><code>## # A tibble: 480 × 19
+##    Provider MonitoringLocationIdentifier YearSummarized CharacteristicType
+##    &lt;chr&gt;    &lt;chr&gt;                                 &lt;dbl&gt; &lt;chr&gt;             
+##  1 NWIS     USGS-11447650                          1958 Nutrient          
+##  2 NWIS     USGS-11447650                          1959 Nutrient          
+##  3 NWIS     USGS-11447650                          1960 Nutrient          
+##  4 NWIS     USGS-11447650                          1961 Nutrient          
+##  5 NWIS     USGS-11447650                          1962 Nutrient          
+##  6 NWIS     USGS-11447650                          1963 Nutrient          
+##  7 NWIS     USGS-11447650                          1964 Nutrient          
+##  8 NWIS     USGS-11447650                          1965 Nutrient          
+##  9 NWIS     USGS-11447650                          1966 Nutrient          
+## 10 NWIS     USGS-11447650                          1966 Nutrient          
+## # ℹ 470 more rows
 ## # ℹ 15 more variables: CharacteristicName &lt;chr&gt;, ActivityCount &lt;dbl&gt;,
 ## #   ResultCount &lt;dbl&gt;, LastResultSubmittedDate &lt;chr&gt;,
 ## #   OrganizationIdentifier &lt;chr&gt;, OrganizationFormalName &lt;chr&gt;,
 ## #   MonitoringLocationName &lt;chr&gt;, MonitoringLocationTypeName &lt;chr&gt;,
 ## #   ResolvedMonitoringLocationTypeName &lt;chr&gt;, HUCEightDigitCode &lt;chr&gt;,
-## #   MonitoringLocationUrl &lt;chr&gt;, CountyName &lt;chr&gt;, StateName &lt;chr&gt;,
-## #   MonitoringLocationLatitude &lt;chr&gt;, MonitoringLocationLongitude &lt;chr&gt;</code></pre>
+## #   MonitoringLocationUrl &lt;chr&gt;, CountyName &lt;chr&gt;, StateName &lt;chr&gt;, …</code></pre>
+<pre class="r"><code>df_srf_nutr_data_avail %&gt;% summarize(
+  min_yr = min(YearSummarized),
+  max_yr = max(YearSummarized),
+  num_samp = sum(ResultCount),
+  .by = CharacteristicName
+)</code></pre>
+<pre><code>## # A tibble: 12 × 4
+##    CharacteristicName                                     min_yr max_yr num_samp
+##    &lt;chr&gt;                                                   &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;
+##  1 Nitrate                                                  1958   2023     1470
+##  2 Phosphate-phosphorus                                     1966   1992       54
+##  3 Phosphorus                                               1970   2023     1053
+##  4 Inorganic nitrogen (nitrate and nitrite)                 1971   2023      714
+##  5 Kjeldahl nitrogen                                        1973   2023      851
+##  6 Nitrite                                                  1973   2023     1110
+##  7 Nitrogen, mixed forms (NH3), (NH4), organic, (NO2) an…   1973   2023     1298
+##  8 Ammonia and ammonium                                     1977   2023     1349
+##  9 Organic Nitrogen                                         1977   2023      919
+## 10 Orthophosphate                                           1981   2023     1171
+## 11 Nitrogen                                                 2001   2023      222
+## 12 Particulate nitrogen/particulate organic carbon          2001   2018      115</code></pre>
 </div>
-<div id="usgs-parameter-codes" class="section level3">
-<h3>USGS parameter codes</h3>
-<pre class="r"><code>parameterCdFile %&gt;% 
-  filter(parameter_group_nm == &quot;Physical&quot;) %&gt;% 
-  as_tibble()</code></pre>
-<pre><code>## # A tibble: 831 × 6
-##    parameter_cd parameter_group_nm parameter_nm    casrn srsname parameter_units
-##    &lt;chr&gt;        &lt;chr&gt;              &lt;chr&gt;           &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;          
-##  1 00004        Physical           Stream width, … &quot; &quot;   &quot;Instr… ft             
-##  2 00010        Physical           Temperature, w… &quot; &quot;   &quot;Tempe… deg C          
-##  3 00011        Physical           Temperature, w… &quot; &quot;   &quot;Tempe… deg F          
-##  4 00012        Physical           Evaporation te… &quot; &quot;   &quot; &quot;     deg C          
-##  5 00013        Physical           Evaporation te… &quot; &quot;   &quot; &quot;     deg C          
-##  6 00014        Physical           Wet bulb tempe… &quot; &quot;   &quot;Tempe… deg C          
-##  7 00020        Physical           Temperature, a… &quot; &quot;   &quot;Tempe… deg C          
-##  8 00021        Physical           Temperature, a… &quot; &quot;   &quot;Tempe… deg F          
-##  9 00025        Physical           Barometric pre… &quot; &quot;   &quot;Barom… mm/Hg          
-## 10 00030        Physical           Incident solar… &quot; &quot;   &quot;Solar… cal/cm2/d      
-## # ℹ 821 more rows</code></pre>
-<pre class="r"><code>as_tibble(pcode_to_name(c(&quot;00010&quot;, &quot;00095&quot;, &quot;00300&quot;, &quot;00400&quot;, &quot;63680&quot;)))</code></pre>
-<pre><code>## # A tibble: 5 × 11
-##   parm_cd description    characteristicname measureunitcode resultsamplefraction
-##   &lt;chr&gt;   &lt;chr&gt;          &lt;chr&gt;              &lt;chr&gt;           &lt;chr&gt;               
-## 1 00010   Temperature, … Temperature, water deg C           &quot;&quot;                  
-## 2 00095   Specific cond… Specific conducta… uS/cm @25C      &quot;Total&quot;             
-## 3 00300   Dissolved oxy… Oxygen             mg/l            &quot;Dissolved&quot;         
-## 4 00400   pH, water, un… pH                 std units       &quot;Total&quot;             
-## 5 63680   Turbidity, wa… Turbidity          FNU             &quot;Total&quot;             
-## # ℹ 6 more variables: resulttemperaturebasis &lt;chr&gt;,
-## #   resultstatisticalbasis &lt;chr&gt;, resulttimebasis &lt;chr&gt;,
-## #   resultweightbasis &lt;chr&gt;, resultparticlesizebasis &lt;chr&gt;, last_rev_dt &lt;chr&gt;</code></pre>
+<div id="discrete-wq-data-from-wqp" class="section level3">
+<h3>Discrete WQ data from WQP</h3>
+<p>Import discrete nitrate data from the Water Quality Portal (WQP)</p>
+<pre class="r"><code>df_srf_nitrate &lt;- readWQPqw(
+  siteNumbers = &quot;USGS-11447650&quot;,
+  parameterCd = &quot;Nitrate&quot;, 
+  startDate = &quot;2023-01-01&quot;, endDate = &quot;2023-12-31&quot;, 
+  tz = &quot;America/Los_Angeles&quot;
+)</code></pre>
+<pre><code>## NEWS: USGS data availability and format are changing. 
+## Beginning in mid-March 2024 the data obtained from legacy profiles
+## will not include new USGS data or recent updates to existing data. 
+## To view the status of changes in data availability and code functionality, visit:
+## https://doi-usgs.github.io/dataRetrieval/articles/Status.html
+## If you have additional questions about these changes, 
+## email CompTools@usgs.gov.</code></pre>
+<pre class="r"><code>as_tibble(df_srf_nitrate) %&gt;% 
+  select(MonitoringLocationIdentifier, ActivityStartDateTime,
+    CharacteristicName, USGSPCode, ResultMeasureValue)</code></pre>
+<pre><code>## # A tibble: 42 × 5
+##    MonitoringLocationIdenti…¹ ActivityStartDateTime CharacteristicName USGSPCode
+##    &lt;chr&gt;                      &lt;dttm&gt;                &lt;chr&gt;              &lt;chr&gt;    
+##  1 USGS-11447650              2023-01-04 10:15:00   Nitrate            00618    
+##  2 USGS-11447650              2023-01-04 10:15:00   Nitrate            71851    
+##  3 USGS-11447650              2023-01-11 08:45:00   Nitrate            71851    
+##  4 USGS-11447650              2023-01-11 08:45:00   Nitrate            00618    
+##  5 USGS-11447650              2023-01-12 09:30:00   Nitrate            00618    
+##  6 USGS-11447650              2023-01-12 09:30:00   Nitrate            71851    
+##  7 USGS-11447650              2023-01-31 09:30:00   Nitrate            00618    
+##  8 USGS-11447650              2023-01-31 09:30:00   Nitrate            71851    
+##  9 USGS-11447650              2023-02-07 13:15:00   Nitrate            00618    
+## 10 USGS-11447650              2023-02-07 13:15:00   Nitrate            71851    
+## # ℹ 32 more rows
+## # ℹ abbreviated name: ¹​MonitoringLocationIdentifier
+## # ℹ 1 more variable: ResultMeasureValue &lt;dbl&gt;</code></pre>
 </div>
 <div id="usgs-county-and-state-codes" class="section level3">
 <h3>USGS County and State codes</h3>
@@ -1959,7 +1971,7 @@ as_tibble(df_srf_q_davg)</code></pre>
 ## 10 11    District of Columbia DC     01702382
 ## # ℹ 48 more rows</code></pre>
 <p>More useful links for accessing USGS data through
-<code>dataRetreival</code>:</p>
+<code>dataRetrieval</code>:</p>
 <ul>
 <li>Parameter codes: <a href="https://help.waterdata.usgs.gov/codes-and-parameters/parameters" class="uri">https://help.waterdata.usgs.gov/codes-and-parameters/parameters</a></li>
 <li>Stat (Statistic) codes: <a href="https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html" class="uri">https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html</a></li>
@@ -1970,34 +1982,34 @@ as_tibble(df_srf_q_davg)</code></pre>
 <h2><code>cder</code></h2>
 <p>Package documentation: <a href="https://hydroecology.net/cder/index.html" class="uri">https://hydroecology.net/cder/index.html</a> <br> Available
 on CRAN: <a href="https://cran.r-project.org/web/packages/cder/index.html" class="uri">https://cran.r-project.org/web/packages/cder/index.html</a></p>
-<div id="import-data" class="section level3">
-<h3>Import data</h3>
-<pre class="r"><code>library(cder)
-df_dto_2023 &lt;- cdec_query(
-  stations = &quot;DTO&quot;, sensors = 23, durations = &quot;D&quot;, 
-  start.date = &quot;2022-10-01&quot;, end.date = &quot;2023-10-31&quot;
-)
-df_dto_2023</code></pre>
-<pre><code>## # A tibble: 396 × 9
-##    StationID Duration SensorNumber SensorType DateTime           
-##    &lt;chr&gt;     &lt;chr&gt;           &lt;int&gt; &lt;chr&gt;      &lt;dttm&gt;             
-##  1 DTO       D                  23 OUTFLOW    2022-10-01 00:00:00
-##  2 DTO       D                  23 OUTFLOW    2022-10-02 00:00:00
-##  3 DTO       D                  23 OUTFLOW    2022-10-03 00:00:00
-##  4 DTO       D                  23 OUTFLOW    2022-10-04 00:00:00
-##  5 DTO       D                  23 OUTFLOW    2022-10-05 00:00:00
-##  6 DTO       D                  23 OUTFLOW    2022-10-06 00:00:00
-##  7 DTO       D                  23 OUTFLOW    2022-10-07 00:00:00
-##  8 DTO       D                  23 OUTFLOW    2022-10-08 00:00:00
-##  9 DTO       D                  23 OUTFLOW    2022-10-09 00:00:00
-## 10 DTO       D                  23 OUTFLOW    2022-10-10 00:00:00
-## # ℹ 386 more rows
-## # ℹ 4 more variables: ObsDate &lt;dttm&gt;, Value &lt;dbl&gt;, DataFlag &lt;chr&gt;,
-## #   SensorUnits &lt;chr&gt;</code></pre>
-</div>
 <div id="station-information-1" class="section level3">
 <h3>Station Information</h3>
-<pre class="r"><code>cdec_meta(station = &quot;DTO&quot;)</code></pre>
+<pre class="r"><code>library(cder)</code></pre>
+<pre class="r"><code>cdec_meta(station = &quot;FPT&quot;)</code></pre>
+</div>
+<div id="import-data" class="section level3">
+<h3>Import data</h3>
+<pre class="r"><code>df_fpt_turb &lt;- cdec_query(
+  stations = &quot;FPT&quot;, sensors = 221, durations = &quot;E&quot;, 
+  start.date = &quot;2024-03-01&quot;, end.date = &quot;2024-03-31&quot;
+)
+df_fpt_turb</code></pre>
+<pre><code>## # A tibble: 2,877 × 9
+##    StationID Duration SensorNumber SensorType DateTime           
+##    &lt;chr&gt;     &lt;chr&gt;           &lt;int&gt; &lt;chr&gt;      &lt;dttm&gt;             
+##  1 FPT       E                 221 TURB WF    2024-03-01 00:00:00
+##  2 FPT       E                 221 TURB WF    2024-03-01 00:15:00
+##  3 FPT       E                 221 TURB WF    2024-03-01 00:30:00
+##  4 FPT       E                 221 TURB WF    2024-03-01 00:45:00
+##  5 FPT       E                 221 TURB WF    2024-03-01 01:00:00
+##  6 FPT       E                 221 TURB WF    2024-03-01 01:15:00
+##  7 FPT       E                 221 TURB WF    2024-03-01 01:30:00
+##  8 FPT       E                 221 TURB WF    2024-03-01 01:45:00
+##  9 FPT       E                 221 TURB WF    2024-03-01 02:00:00
+## 10 FPT       E                 221 TURB WF    2024-03-01 02:15:00
+## # ℹ 2,867 more rows
+## # ℹ 4 more variables: ObsDate &lt;dttm&gt;, Value &lt;dbl&gt;, DataFlag &lt;chr&gt;,
+## #   SensorUnits &lt;chr&gt;</code></pre>
 </div>
 </div>
 </div>
@@ -2019,7 +2031,8 @@ library(deltafish)</code></pre>
 <pre><code>## The following object is masked from &#39;package:utils&#39;:
 ## 
 ##     timestamp</code></pre>
-<pre class="r"><code># Build the database - this takes a while, use update = TRUE to re-build cached database
+<pre class="r"><code># Build the database - this takes a while, use update = TRUE to 
+  # re-build cached database
 create_fish_db()</code></pre>
 <pre><code>## Reading data from cache directory, revision edi.1075.1</code></pre>
 <pre><code>## [1] &quot;C:\\Users\\dboswort\\AppData\\Local/deltafish/deltafish/Cache&quot;</code></pre>
@@ -2029,26 +2042,27 @@ fish &lt;- open_fish()</code></pre>
 <pre><code>## Note: fish length units are not all compatible across surveys. The Suisun study uses standard length while the other surveys use fork/total length. Use deltafish::convert_lengths to convert the length units of the 20 taxa for which we have conversion equations from standard length to fork/total length.</code></pre>
 <pre class="r"><code># Filter for sources and taxa of interest
 surv_FMWT &lt;- surv %&gt;% filter(Source == &quot;FMWT&quot;) %&gt;% select(SampleID, Date)
-fish_smelt &lt;- fish %&gt;% 
-    filter(Taxa %in% c(&quot;Dorosoma petenense&quot;, &quot;Morone saxatilis&quot;, &quot;Spirinchus thaleichthys&quot;))
 
-# Join and collect the resulting data frame - collect executes the sql query and
-# gives you a table
+fish_smelt &lt;- fish %&gt;% 
+  filter(Taxa %in% c(&quot;Dorosoma petenense&quot;, &quot;Morone saxatilis&quot;, &quot;Spirinchus thaleichthys&quot;))
+
+# Join and collect the resulting data frame - collect executes 
+  # the SQL query and gives you a table
 df_fish &lt;- left_join(surv_FMWT, fish_smelt) %&gt;% collect()
 df_fish</code></pre>
 <pre><code>## # A tibble: 175,009 × 6
 ##    SampleID Date       Length Count Notes_catch Taxa                   
 ##    &lt;chr&gt;    &lt;date&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;                  
-##  1 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
-##  2 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Morone saxatilis       
-##  3 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Dorosoma petenense     
-##  4 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
-##  5 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Morone saxatilis       
-##  6 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Dorosoma petenense     
-##  7 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
-##  8 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Morone saxatilis       
-##  9 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Dorosoma petenense     
-## 10 FMWT 4   1992-09-16     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
+##  1 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Dorosoma petenense     
+##  2 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
+##  3 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Morone saxatilis       
+##  4 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Dorosoma petenense     
+##  5 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
+##  6 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Morone saxatilis       
+##  7 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Dorosoma petenense     
+##  8 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
+##  9 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Morone saxatilis       
+## 10 FMWT 4   1992-09-16     68     1 &lt;NA&gt;        Dorosoma petenense     
 ## # ℹ 174,999 more rows</code></pre>
 </div>
 <div id="zooper" class="section level2">
@@ -2095,7 +2109,10 @@ df_zoop &lt;- Zoopsynther(
 # devtools::install_github(&quot;InteragencyEcologicalProgram/discretewq&quot;)
 library(discretewq)
 
-df_dwq &lt;- wq(Sources = c(&quot;EMP&quot;, &quot;NCRO&quot;, &quot;USGS_CAWSC&quot;, &quot;USGS_SFBS&quot;), Start_year = 2020, End_year = 2022)
+df_dwq &lt;- wq(
+  Sources = c(&quot;EMP&quot;, &quot;NCRO&quot;, &quot;USGS_CAWSC&quot;, &quot;USGS_SFBS&quot;), 
+  Start_year = 2020, End_year = 2022
+)
 df_dwq</code></pre>
 <pre><code>## # A tibble: 5,176 × 78
 ##    Source Station Latitude Longitude Field_coords Date               
@@ -2149,6 +2166,8 @@ library(sf)</code></pre>
 ## # ℹ 2 more variables: Shape_Area &lt;dbl&gt;, geometry &lt;POLYGON [°]&gt;</code></pre>
 <pre class="r"><code>ggplot(WW_Delta) + geom_sf() + theme_bw()</code></pre>
 <p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABUAAAAPACAMAAADDuCPrAAAApVBMVEUzMzNNTU1NTW5NTY5Nbm5Nbo5NbqtNjqtNjshZWVluTU1uTY5ubk1ubm5ubo5ujqtujshuq8huq+SOTU2Obk2Obm6Oq6uOq8iOq+SOyOSOyP+rbk2rbm6rjk2rjm6ryOSr5Mir5P/Ijk3Ijm7Iq27IyKvI5KvI5P/I///kq27kyI7kyKvk5Mjk///l5eXr6+v/yI7/5Kv/5Mj/5OT//8j//+T///+6MvjnAAAACXBIWXMAAB2HAAAdhwGP5fFlAAAgAElEQVR4nO29iXrcxtWu66ZiH4NxYh9L2UkknySm945E61eT1DZx/5d2GkMBNaMA1LBq1fc+j63GXKvReLlqAPBNDwAA4BDflC4AAADUCgQKAAAHgUABAOAgECgAABwEAgUAgINAoAAAcBAIFAAADgKBAgDAQSBQAAA4CAQKAAAHgUABAOAgECgAABwEAgUAgIM0JtBvAADVUdobbggXLQX5w316yn5IOjQdfNvRxwweAiUDBJqVpoNvO3oIlCUQaFaaDr7t6CFQlkCgWWk6+Lajh0BZAoFmpeng244eAmUJBJqVpoNvO3oIlCUQaFaaDr7t6CFQlkCgWWk6+Lajh0BZAoFmpeng244eAmUJBJqVpoNvO3oIlCUQaFaaDr7t6CFQlkCgWWk6+Lajh0BZAoFmpeng244eAmUJBJqVpoNvO3oIlCUQaFaaDr7t6CFQlkCgWWk6+Lajh0BZAoFmpeng244eAmUJBJqVpoNvO3oIlCUQaFaaDr7t6CFQlkCgWWk6+Lajh0BZAoFmpeng244eAmUJBJqVpoNvO3oIlCUQaFaaDr7t6CFQlkCgWWk6+Lajh0BZAoFmpeng244eAmUJBJqVpoNvO3oIlCUQaFaaDr7t6CFQlkCgWWk6+Lajh0BZAoFmpeng244eAmUJBJqVpoNvO3oIlCUQaFaaDr7t6CFQlkCgWWk6+Lajh0BZAoFmpeng244eAmUJBJqVpoNvO3oIlCUQaFaaDr7t6CFQlkCgWWk6+Lajh0BZAoFmpeng244eAmUJBJqVpoNvO3oIlCUQaFaaDr7t6CFQlkCgWWk6+Lajh0BZAoFmpebgu+7sHmqO/jQQKEsg0KzUHDwEegoIlCUQaFaqDr47q9Cqoz8LBMoSCDQrdQd/1qB1R38SCJQlEGhWKg/+pEErj/4cEChLINCs1B78OYPWHv0pIFCWQKBZqT74UwatPvozQKAsgUCzUn/wZwxaf/QngEBZAoFmhUHw3XGFMoj+OBAoSyDQrLAI/rBBWUR/FAiUJRBoVngEf9SgPKI/CATKEgg0K0yCP2hQJtEfAwJlCQSaFS7BQ6C7gUBZAoFmhUvwx1JQLtEfAgJlCQSaFTbBHzIom+iPAIGyBALNCpvgIdC9QKAsgUCzwij4AwZlFP1+IFCWQKBZYRT8gRyUUfT7gUBZAoFmhVPwkkAD707iFP1uIFCWQKBZ4RT8Ks1uYnMLTtHvBgJlCQSaFVbBC2VO7gwwKKvo9wKBsgQCzQqr4DvVnBCoFwiUJRBoVngF36l1902D8op+JxAoSyDQrHALXmn6hEB9QKAsgUCzwjv4LYPyjn4DCJQlEGhWeAcPgXqAQFkCgWaFd/AQqAcIlCUQaFZ4Bw+BeoBAWQKBZoV38BCoBwiUJRBoVngH3139BuUd/QYQKEsg0KzwDn7rZiTe0W8AgbIEAs0K7+AhUA8QKEsg0KwwDx4CdQOBsgQCzQrz4CFQNxAoSyDQrDAPHgJ1A4GyBALNCvPgIVA3EChLINCsMA8eAnUDgbIEAs0K8+AhUDcQKEsg0KwwDx4CdQOBsgQCzQrz4CFQNxAoSyDQrDAPHgJ1A4GyBALNCvPgN26GZx69HwiUJRBoVpgHv3EvJ/Po/UCgFPj87nK5+/uXaeLr3y6Xy48f5eWvv91fLn/6p7LNH28vPy8f33xSdwiBZoV78BCoEwiUAI+XkW9HC77cjxN3v67Lv76dVvhpmPj8w+VuUOlNoGIdCLQw3IOHQJ1AoOV5uR+M+PXd5fvbxOuHy3cf+6+3/38Ry2+zvv3Yv/7vUZjPt/99fft+FOi4QQ+BFod98F6Dso/eBwRanoepLv5yP2hw+v/NiWsK+nyZ/Ph4E+brh/fDnJtdb2v8cHk/rgCBFoZ/8IpBNZvyj94DBEqGSYPPU1p5yzrfz/Olj7eJXwavvvz507D6fyfZQqCl4R/82o/Urcxz+EfvAQIlw8v9UGs3M1BFj3IG+ubT42RbCLQwDQQvfCnMefv/dZ7XQPRuIFAq/H4/JppLG+j3YsEg1t9/uFy+/fcwJbWBvvk0J6eSQL+ZeQIgKl03/b+T5shT4DQQ6HEeLpe7UZD9629Tj/vSh3QT6L+mXvixqXTthb9Zc8pXIVCQnFGWt6xTm1moNCyBQA/z+stf7i93/xg+vrybxjQtA0GfJ53exCoPbZqt+TBkqqjCF6aJ4JV2z3VeI9G7QBWeDJ/HOvzLvW7L5zn1nGS5MFlzbCuFQAvTRvCmP6fe+TaidwCB0uF5GPv5YNjy5X526dTLJJitOWwEgRam3eAhUAiUDIMgXz8Ytpz75aUPI8KaN+NCoIVpN/ghKW03+h4CJcAyztMh0GXW88WSgQ6V+P9AoGVpN3gIFAItjqitj/+aVXhp+c/SVkva+Xz50z0EWpSGg4dA4+0LAj2G0m/0bHa535b/+NHRCz/wcLlAoEVpOHgINN6+INCDPE/DPO/Gmvz8aKYx25z7j57vpeWCVaA3wUKgRWk4eAg03r4g0KMMjwC9E48A/Z/heaB/HSdEB/zXf92LWQtSz9EjBFqWhoOHQOPtCwIlAwSalYaDh0Dj7QsCJQMEmpV2g8c4UAiUIxBoVhgHv/FGTggUAuUIBJoVtsFvvE4OAoVAeQKBZoVr8Fv6xMNEIFCeQKBZ4Rn8Zvo5G5Zn9IFAoCyBQLPCMfj1yfPedXqe0QcDgbIEAs0Ky+Anc46OdEgUr/SAQJkCgWaFZfDSm+PsAhXJKcvoQ4FAWQKBZoVl8N3qTatAu+s8l2X0oUCgLIFAs8IyeEma1oZQvNZ4AAJlCQSaFZbBy860vM1jncEy+lAgUJZAoFlhFnwn/X+eY3ufnPjELPp9QKAsgUCzwiv4zhTo0OJ51WagCj8AgbIEAs0Kq+A7U6BD/nm9GVROQ9cJVtHvBQJlCQSaFVbBCy+uXfBOphVYRb8XCJQlEGhWOAXfqQKVTOlqBeUU/W4gUJZAoFnhFPw6+HOa6swl2jSn6HcDgbIEAs0Ko+BXS3a95kzXSCZG0e8HAmUJBJoVRsF38qfO1fEupsd/GEW/HwiUJRBoVlgGbxv62dlSUpbRhwKBsgQCzUrNwTsfV7f9OFAIFAJlCgSalZqDd2ky4HHKPR5nB4HyBALNSs3BQ6CngEBZAoFmpebg3Q9LhkADgEBZAoFmpebg/U+bD9m45uhPA4GyBALNSs3BO582D4GGAIGyBALNSs3BOwS6/UrjHlX4HgJlCgSalZqDh0BPAYGyBALNSs3B+18YF7JpzdGfBgJlCQSalZqDPyzQpZm05uhPA4GyBALNCr/gQ25DwtOYegiUKRBoVvgFvyVQ+bZ4ftHvAAJlCQSaFX7B+wWqPlWEX/Q7gEBZAoFmhV/wXoFqg0T5Rb8DCJQlEGhW+AW/IVBlkl/0O4BAWQKBZoVf8BBoIBAoSyDQrNQc/IFhTBDoCgTKEgg0KzUHf2QcKNpAFyBQlkCgWak5+CMPY4JAFyBQlkCgWeEX/MY4UGUxv+h3AIGyBALNCr/gtwfSr5/5Rb8DCJQlEGhW+AW/PZB+neIX/Q4gUJZAoFmpNHiPJO0C7VakuZVGHwcIlCUQaFboB+966ueeXni7PmuIPiEQKEsg0KxUELyjTu56dYcx22bOmQqiTwcEyhIINCtVBN9piNmulV0zDItWEX0qIFCWQKBZqSV4mzWdrZ3WTTvLuz5qiT4JEChLINCs1B18iEDFpK0eX3f0J4FAWQKBZqXu4G0pqEugtw9Xff26oz8JBMoSCDQr/ILXBLpOWVJQftHvAAJlCQSaFX7Ba51NkjPNfJVf9DuAQFkCgWaFX/BugZrwi34HEChLINCs8AteHebkv7GTX/Q7gEBZAoFmhV/w3drt3m8koAyj3wEEyhIINCv8gl8FOk351uUX/Q4gUJZAoFnhFzwEGggEyhIINCv8ghcClSvyLvhFvwMIlCUQaFb4BW8I1GNQftHvAAJlCQSaFX7B68OXIFAHEChLINCs8AteCHSddq/LL/odQKAsgUCzwi94XaA+g/KLfgcQKEsg0KzwC94U6NVpUH7R7wACZQkEmhV+wXfTHUjyHAjUBgTKEgg0K/yCtwnUZVB+0e8AAmUJBJoVfsGPAnU90k6DX/Q7gEBZAoFmhV/wk0DVWS6D8ot+BxAoSyDQrPAL3hCo+6WcDKPfAQTKEgg0K/yCHwSq+NLzVDt+0e8AAmUJBJoVfsF3czeSNAMCtQGBsgQCzQq/4NX8c30w/XKPvFSj5xf9DiBQlkCgWWEXfDdV4WdJKm9EmrgO/12nxeyi3wMEyhIINCv8gu8ULEukT/yi3wEEyhIINCv8gles6XmQCAQKgXIEAs0Kv+A7pdruX5Ff9DuAQFkCgWaFXfDB/hwWs4t+DxAoSyDQrLALXhLohj8h0Hj7gkDJAIFmhVvw8iAmCNQLBMoSCDQr3IJXavCb63KLfhcQKEsg0KxwC35HDR4CjbcvCJQMEGhWmAXfSY+f3/LnbQ1m0e8DAmUJBJoVZsHvqcGPKWjKwhAHAmUJBJoVXsF3EGg4EChLINCs8ApersFDoBtAoCyBQLPCK/gdo+j11dsDAmUJBJoVVsErT7ILcKPnhccNAIGyBALNCqvg9/XB90FZKl8gUJZAoFnhFLzchRRmRgg0EhAoGSDQrHAKXiSg7pfImVskLRBtIFCWQKBZ4RS8/BTlIIWiDTQWECgZINCsMApeewR9UC88n+j3A4GyBALNCqPgOz2hDLkZPl1xyAOBsgQCzQqj4M1a+1Y9HgKNBQRKBgg0K3yC72wZp1eheBpTNCBQMkCgWeETvFGDn+c6FTq8EwmdSHGAQMkAgWaFTfBOUzrmj7Mh0EhAoGSAQLPCJnh7AjotkbvmlVfGQ6CRgEDJAIFmhU3wboFKClX1iYH00YBAyQCBZoVL8NYupGXhOrxeX5C2VKSBQFkCgWaFS/C+BHS4MV5JPKWtEheLMhAoSyDQrDAJvvPclrlqEwKVgUBZAoFmhUnw/hr8+gkCXYFAWQKBZoVH8N1WDX5dUdsuVYkqAAJlCQSaFRbBdxtdSPLnzrWoOSBQlkCgWWERfOdVoapMJVOFQCMBgZIBAs0Ki+B9XUi9nnNCoDMQKEsg0KxwCH6jBq+v7G4SbQsIlCUQaFY4BO8VqOUZd56FLQGBsgQCzQqL4D198ObAJXldCDQSECgZINCssAje89RPS/4pv7sTAo0DBEoGCDQrHIL3PvPTsu6SguKJ9LGAQMkAgWaFQ/C+J9nZZqzPZuIQ/WEgUAp8fne53P39yzTx9W+Xy+XHj/o6L/fffZGn/3h7+Xn5+OaTujIEmhUGwfsSUG1iXnN5mB2D6I8DgRLg8TLy7WjBl/tx4u5XdZ3XD5dJoJ9/uNz9sx8FKtaBQAvDIHhPH7x6D9L6WNApY+04RH8cCLQ8L/eDEb++u3zfT6L82H8Vuly4SXac83yz5te370eBjhv0EGhxGATv64NXP2qdRxBoNCDQYzxMdfGX+0GD0/9vTlRT0CEvHQT6+uHmzv759vG2xg+X9+NCCLQw9Qcf2IVkuQceAo0GBHqKSYPPU1p5S0TfS8tuk/9rbAN9/WXw6sufPw2r/3eSLQRamvqDD+xCUu9Auk63z9cf/QkgUDJMvUT2DPTh8v20WM5A33x6nGwLgRam+uBDu5DMW5BmgXrvA+UMBEqF3+/HnHNpA/1eWvZ8q77PvfBSG+ibT3OeKgn0m5knAMIZBOpa5J4etumW7V07iEeGQxQFAj3Ow+Vy9+/x0+tvYy/8T1If0piOimFMay/8zZpTvgqBgnMMNXjXImNV5eMgzjz6ZO9PCPQ4r7/85f5y94/h48u7aUyTNBB07GUyx4EO1nwYMlVU4QtTe/C2Gnw33a9pWbB+GttNR4GmLZ9+YEKgCk+Gz2Md/uV+SD5vaejaBvp4mRpHbQIdk1MItDC1B29vwZxfYmzMXT8uAk1ZuPVwWY6yEwiUDkNLpxjTNKWWIy/3o0vtAh03gkALU3vwvpch6S9AMhZ5OqDiAoEWhHDRFgZFvn6YM8/Vl/N9SgOyJ4U1b8aFQAtTe/BeBWqPn1eWiBVQhY8BBHqIZcjnMYHeKvH/gUDLUnnwW2OQtgWaoFBmKSDQghAu2lJbH/81q/Azjir8UIn/0z0EWpTKg/e+zrhXXwlvr8LncBtJf0KgBFD6jZ4vRieSWMsh0GEIFARalMqD3xKg6+HzYiB9Hn9CoCUhXLRRmuMDmMaavKixD4no3H804hboTcAQaFHqDn6zBu8RaDcJNIPcaPoTAiXB8AjQO/EI0P8Zngf613EiTKA350KgRak7+M0E1PE0kTkBhUBjAYGSAQLNStXBb97GvixWGju75bn0Txnq8LmGSu0GAmUJBJqVqoPfrsF3xqdFppNAE5ZOfYgzPSBQlkCgWak6+A07ye+LN1/FmV6ghOU5AIGyBALNSs3BexNQKc8Ua4sF63TK6InrEwJlCgSalZqD9wl0TT2NGbkEmm7XcYBAWQKBZqXi4H0vk5ObPOc567J1fsLoqeefEChTINCsVBy8s4NGm9/pffBidsro6fsTAuUJBJqVioN3+NOcrT+Vac5JexF9CtfR9ycEyhMINCuUg98a42m/Dd6cCYFagUBZAoFmhXLwWwK1ZqCWmRCoFQiUJRBoVigHvynQsI30FU2BJrAdBEoGwkVLAQSaFcrBb91lFJaAutpEkwq0gj4kCJQnEGhWKAe/U6DzE5bMFe1zFIHGFR75MfQjEChLINCsUA4+8D53aU7QPItAIxqP9O3vChAoSyDQrFAO3uchex+8KVDrpukEWos8ByBQlkCgWaEcvF+gIf607aJL2QtfkT8hUJ5AoFmhHLxHRtZWy8AGUF2gEaVXkz8hUJ5AoFkhHfzms5a0ebb1zA2lRUP0MWvdEChBCBctBRBoVkgH737WkrNvXd3a489x+STQU2X0FoE0EChLINCskA5+j0DtHfDGSCdDoM36EwLlCQSaFdLBe572uSlQxzB7aW58gUbbUxYgUJZAoFkhHbzncZ8BCah1O3XvcV8qB4GShHDRUgCBZoV08Nb72keMQaCWVW0baytEFWhl/oRAeQKBZoV08C4rWm/j1KatbaL6viDQSECgZIBAs0I6eI9A/Wsaz19y9Sg9tetPCJQnEGhWSAfvEKgtvXROdpI97VqNdCMnBEoUwkVLAQSaFdLBuwW6saY0Vkn2o5mYXuflERwKgRKFcNFSAIFmhXTwdoGGjGFaF3Tu9aIln+oxawECZQkEmhXSwTsEujlmSUo5zXZPZSLek0ArG0XfQ6BMgUCzQjl428NBensNPlSg6r2c14gZKARKFcJFSwEEmhXKwRvDNuf720ObQO16XOeNAj1fzPlQcXaUEQiUJRBoVigHL6lO6i63DkiyTtqtpgo0Vknr8ycEyhMINCuUg5dUpzyGTr8NyeFTl9XWPcXKQKv0JwTKEwg0K5SDlwW6VtOtffCWvnan1dTENkI5K2z/HIBAWQKBZoVy8Or4TW/HUGdMetzoGuR0upx1AYGyBALNCsHgJb/10mBNT8+QMdjTPzwpskAr9ScEyhMINCsEg48gUH/lXDpAjOgr9ScEyhMINCsEg++UT2s9fv5ncxRTp2zmO0AUgdaagEKgPIFAs1Iy+MWF5njP9aMpUPOF8HsFujanxhDo+V2UAQJlCQSalcLBd0oH+zhnU6D2+5PW7bf8KfdHnY++2gQUAuUJBJqV4sEbApU/y/X1UIHOa20d07WvndTrTwiUJxBoVooHP3b5SJPKMsvEVh/SToGqBJfafuy6gEBZAoFmpXzwiri01kxzYrMJNEig3ns9d1GvPyFQnkCgWSEQvFxNt9xRtEzN8/wC7fYJ9GT0HQQ6AYGSAQLNCoXgjXZOY/66LIpA+2gCrbgGD4HyBALNCongl4xwnrK2SS4Lzc0tewoRaBdBoOe2LwoEypIGBErpqisiUMcT5RWNqp96j0DlJtRQgYp7nCDQOECgZGhBoIQuuzIZqNWg2oDP3iZQkZbaBz45Xx9nO/7437noKZ3I/UCgLGlBoJmP56NQFV5PJMMFetXHyZtDRfs+wKBTEno8en38an1AoCzhL1BSeUuxNlC1idMyYr73CNSxH1tl3n34/oxARQ5bMRAoS9gLlNZVV7ATyTVmaaMKb+zEPghqy25nBaoXrz4gUJbwFyip667sw0SUicA20N6Y6dhfwMFPCZTWidwPBMqSBgRK6cIjI1DjqSG9RaDG7ZaWfvp5Z9t1eKMEe+iqT0AhUJ7wFyipK6/oONADAr16ssxOWRAi0KfjAqX1d/AIEChLuAuU2JVXVqDKbfAHBKrtTV0QcDvnKYEe3ZQKEChLINCslL0TSetC18d42qrw8sbavrSP/i96XIoMNBIQKBn4CzTn0TYp/UDlVUQ7BWobSap9TilQYi0xR4BAWcJdoMSuu/L3wksGnb23LlLWk9M+68vhje18Bj0t0OpTUAiUJRBoVsoLdHXR/ACRbYFanyhiEajPoLNAG05BIVCW8BcoqeuOikCtz4U3BXqVKvLWpzVNC6Q9+456TqC0TuR+IFCWQKBZISDQrlscqg+GV1cTdrW/icMm0A2DQqCxgEDJwF2gxC678gJV8sVuS6DLR2WBOq7d8agRy5GfTjSCUjuTu4FAWQKBZqW4QNWhoB6B9rJAjX1YR5Tq+zcODYFGAgIlA3OBUqv4lRaoJrurd6D82glv2Y+r5wgCdQCBsoS9QDMeLIB0wasd6s6V9G2sven6Qst+1xuZzAFOjmLcFpwbx3R4WxJAoCyBQLOSVKDdMjjeuY4x5yrnkuYObQvUfXmzU7OInsJZV1k6riBQCQiUDBBoVtIGb3QL6Yst866uXFLalXWfYnCTtRjO8jkL1+ujUtWF9E7lXiBQlnAW6IZPSpA+eHfE9gVrO6hboA5NOnfqKsOTY0G3lZ32yEAVIFAyQKBZyRC8I2h3Vnh197X7tvYI1GU7p0A3T1NQCy9tIFCWcBboCK3LLkvwNh/5avZXqwoDBeosgmXuk2Mk/fZfOWJ/B48AgbKEu0CJXXmZgje7YnwrX60GVavwFoF692w1qDsD9RRPlIVedWIfEChLmAuU2jWXK/jzAlUTUPcR3C2u5hJPFd61l6Usa2+8Y1XqQKAsYS/QjAcLIFvwnluMzHWvxtvfQ/uQvOPmjUUugbr2so6jWscyVZuHQqAs4S1Qctdaxh40x2fruqOU9FsyNwTqXrTuQpvzpOxTxr9zJQGldkpDgUBZwlugxLqQ8g5BkD5vrjyMBlVegNQp70M6JFBTdp0bdWfaMmU9aqc0FAiUJRBoVjIG708g9ZWvah7Y6ZPO3XtbV81WAT3nFM8cFauvE+sxROJZbfI5AoGyhIBAU14W1K65vO0Xm+2U6srKsCV1avkkbaEvs+9W/mxpA1WE2q0j5iVhdl1P70TuBwJlCQGBpjQotesu+ytJx38C11UFutTglfm9/nFLoPJenszmTtH8OtXUpd6i5QjUTuFRIFCWkBBoumuE2tWXrxd+/ie46qs8VkQSqHpytGq9pf9H320n7cYu0OWD3Nq5HozYGTwMBMoSCgJNqDlqV1++caDaAKAlvetdX4qjCq81Y8rrhwh0Wa8fM1DzVMuGl5LQ5dDU/gQeBgJlCQ2BJjtYyBWekywPE9lmWtPc0JwwRuQrXVM7GwfUcfBrWSzDlZZjkzp9Z4BAWcJcoNQSmNQC7fShksJQU3KnZKRGbfq6LVBFgDsEOn/QBoIuJZZXlZLn+Sg8gEBZQkOgKVPQZLs+QlKBbgwzN3I/w41XKRW0PaNJ3Sb8tsq1HdTSH7VkoVr+yawGD4HyhIRA22kETf5Eet8a6rpmcqm0nF6X/NC2B7GX4MKN/38y8k+1PJ3ygcNDQCUgUJbQEGiyK4XaBZhEoErPi2c1Y7NOXy43Rs571g6kbB7+5a5jleyFkQYNiIZPa5ZcMRAoS4gINJXqqF2AiQQaEqbZ/63ffbRToPuKqLUwuEt8oJW1CiBQlpARaBrXNSHQY+hNjpJApRq8toU8deho25tLBerSVU3yA4GyhI5A0yQbxC4/YgJVvGYTqLqFZ2r7aP04kD5kc6k+39P7G3gUCJQlEGhWaAl0/nC9rmOb5iX2Gry2/b6j9YpAPVurw5jIncKjQKAsoSTQBFcKtfSFkEAX1qp8pwjU6GQ6IdDpANI7kbYFKq1K7CQeAwJlyZ5w4/yOGxOoWgCKAp1Z6vJD/f263vgprdB7Jrd2bhsk71xXW6P8WYwABMoSCDQx1QhUGcremX37nnuSjP2Ys8Z/lhuRvKdFaDzkWBUBgbJkR7iRfsVZ20DLX3j1CLQXI5uuUnuotEyb9PhTT17FhKjCb/ySOjEUNOBo9QCBsmSPQOMc0f1Din+RlL3uLCIgLtDRfmOfkiXhDFOa1Iy6jJ4Xq84C3TwrthEA1SsUAmUJKYFGv0Yg0L0M/rzaEtDAJlB5oNJq0XmOSEC3C2E5AAS6AoGSYVcVPspvuB2B9p1xN3cFAlU65PVF8pR9e9/MsBp8zyHfNIFAWbJPoEbP7AGaEqjybsu+CoFeHed51Ko8ad/euk9pF4EnhZ9BIVCW7OuFj2FQzw8p+lVDQKDq90VeoFOZr9YEVKugOzZ3zlpy29ByBK1XDRAoS/aGm1SgMa+aKNny6TLoIdEXaN9PtyaZc5f/TZOhAl1GLnVD9OEPEa2+0VMDAmXJ7nBPa8n7Q4qmvML2XMeLa22gcyWWtBw6iz+XEZzrDMfG9hnj9oNAw2Mn/R3tBwJlyf5wzzaFZslACytKqbXKpXnqzKyUHFq77TRP+3djGJMxOf47nPrw0El/R/uBQFlyONzDEvAL9Ng+jd2UNJT489JZPjw97WgGLIavIdOzjjFf+kOrfhFhpQhdkSgJm78hUDKcCPegBvxV+GNF0XZSuPouj4idbYoAACAASURBVCWXXuS2EhJm2QiMGUcyUOVPxRj4U78jMOJ5+ibaXwsIlCVnwj32A99oAz1/1ZS/7rpu7ixZOp6FOZ/E3IBdlGNrEL1jljLfSDYHf+6qwlM4kyfQCw+BsuRUuId+4Bs/pLMXDYkKssgy15RztknwVdR1m7leOix9SAHryPMtfyO6vW2gfdVJqFFyCJQl58I90p20JdATxRm3p3DNrV/LkXqcMty8RDz6MW1lcJRrCdtcMt0LvzOaws0xh7BfFRAoSyKEu/MXnligFBJQqfXvmEDXnvoy0Ti60rfmSbPtAj1kQwondAeuGCFQlhATKIsm0F7pa9ndFSv8WVKgykAmuz93C7RT3om0pzRHNiqDJ2GGQFkSI9x9l8XGOFAeAp0x4gkTaE9eoM7zpAxb0hYNVfhDpTmyURk8v18IlCVRwt11lXsFeroofUrn7O5ANq6n3W2ghf4cyAbdUYGXFlg6ouR3Iu0pSz0C9RUVAmVJnHA7d83NoGKBBpZPdCJY8umwq0jqhShlj9WgO3qQerm8lrFQ462cB8oSMIcE3uAgUJZEClca/Le1avI7kRL224bteamDHxXoGkOx7Gt+Dp/jhIYI1Cj7cYHq2TzVrnlvoSBQCnx+d7nc/f3LNPH1b5fL5cePyvLbrDt1Vv/H28vPy8c3n9QdxhLo+uPeWjXgXvig68O5SsqrK2TfaxCHBdrt+SLSMD7Tbquv3bPECL7r5nGg+0PqFHpHdl8cf4kgUAI8Xka+HS34cj9O3P26Lv/tIs36/MPl7p/9KFCxTjKB7qjE+54H2i8XhzPDkY64VZQkbO/cNQZ0IFSgS9a1t3jxsD8VdF4UIFDLgjH6A0OHlZ1I3+7BvcRkFPryyQcEWp6X+8GIX99dvr9NvH64fPex/3r7/xex/Hk05m3WoMnnmzW/vn0/CnTcoE8pUPEDOleF74V+PHJ0N7JtLohCgEDdRdmXgZZ1RGd7rN28xLOR+GBZIKKPkz6eMXEk1px4uygQaHkeprr4y/2gwen/NycuKehNqe/7cdbt39cPw+fnm11va/wwLUgq0Pmv8VmBzntyLZCvm/35UQy8e5fr7Z3lb8G+TqTCghgerGxfcFKggX/jglpLiuboUmPN5toQKBkmDT5PaaWwZi/pcRDt6y+DV1/+/GmY/d9JtokFer4TadmPZ4HcRe0ow/YBTuCrvirL1ga7lZoy0F5/odM6f5dA169Bil7tEXIQVsiQtVKw88gQKBle7odau5mBLowClTLQN58eJ9umFmiEKvy0l60Fbr8kr9j59q4ssjVjhj9MpC+dXw0FOCNQuTdp3kKO3lzxYBlPbX3mwDuPDIFS4ff7Medc2kC/11eYnCq1gb75NOepkkC/mXmKy+2aG//pujM7sW08XYfKlG1FZa0kbO5dHL97coQSchB7dHmZT6Yx21OweZFypnwrBnydfkp9R0VPDgR6nIfL5e7f46fXqc/9py/6KnO6ufbC36w55avpBTpdOucs5vKnNuPJdvWktmfQlbP+DTlcGtffh6zYBRrgT+nEuFauXKBlTw0EepjXX/5yf7n7x/Dx5d00pumjtsrzRa3UT9Z8GKyavgq/1qFdNZzNqoy9bmQOy+5sT3ZPX+kNqFevAxX1lfe0gZauwLuq8AE1eKWFc11qq8KfDbLMt3TgoKjCk+HzWId/uR+Sz1saqrWBPt/fvVdmTNYc6/U5BLoOJLcv3haodVNDoHobobdnPiYBh1ifoKxd38G98IEHSotVoH5/agVXVzY6kaI0WBcR6P5NIFA6PA9jP+cxTVNqufKoC1VYc9goi0BnjgvUflkZGah6vcbKaLYJ6CHuuvU9HsqC8IeJ9MQEGtI5bv7RcEa/q6d9o5T5v6Yjh4RA6TB0w79+mEU59ckLjIR0rbffjJtToK6/0oFJmDHDNrBQymPWj7sKeQBP7VrtWrYoZ+uZ7EoCV7wOLwl0W5/SOZBmKqvI40DjhZb3WzrctgKBFmcZ8ukU6OvDfJunjLDmrRL/n6wCtf/MdiVh67S5N5GCdnOL4bSeY+x3RIzGA7mU8ue5dHLD4JP/+lNy6T63Gww66Q+CvyiSW7WxsPJakkAjlVAcPObuto518GgQaHlEbX3811aFf7h8Z/TJrw2fz5c/3VcpUPuPVk7yxCbOm2ci4s7EzNHhklpWzbuvQelPgZiOW/Z9SKnwZpPFos9OWyJNSLdyxiricvioO/Qc6PC2EGh5lH6j54vRifRo86fUc/RwuVQiULnJzXV5aDXFRaBZDOpaIq+w1GinKWkFRxYr59LLnJgl30doU4IUibGqQ6BRyqeVIfo+zUOcOQYESoDn+WlLY01+fjTTmIi+3I997BeB3K+0CvQm4FoEGnBFGAId3HNNnoL6WgL1LEzKjmebPkn7MB53JHtX3WUJXEmlZT2nPx0CjVI+/Ugpdirv/6SjIVAKfJWf9/k/w/NA/zpOjAJ9vmwI9ObcagS6nabofRWjkq7X69IDHnacXWgpop4h662AWs12fKTwspnUFtAp3ddK5lcsBZ2akwO+SX9DqTzr6cmYFYvkGejp/UOgLEkZrv03F347+EaHr9HZOwv0uog0+jU1C86cLy+Wauzq40u75ZHCa9lklRoevRYV6PgNbv8hWrrtNvvVEgo08bcU488xBMqSOgWq/6SlHOgqkeiqMnarpJFKL5MkoPGDuKVf6yia/yCoVf9JswUT0GuIN5bYt/3Zi/w7UhGV48TfZ+TdQ6AsSStQ2+9uh0BdP1vTYNJGskDTXFY2gSoV+WVarqOL+rBeKmllZaZIAJOEsEkX2h2n/u2wLl04+kqPsEIkBAINh3DRUpA0XOvFEv5DOiLQPm0KaqnUzlmi4soVKcF05HRrs4C0rKQ7pwLs8acnTdYy0FRBJf62INBwCBctBWnDtf2sUws0Rwpqq62LcojEU167X6rET9ZHtcs7E1EU7kEKNLhl3IC5XHDsvfBhxN2zdlpj7BsCZUnicC0XYQKBKiuqBg091l466R/1SnM2Boo2UHNJv2612DZYYSlYe+O2epA2ElBDoBEKF3Kks/ua99hFPAsQKEtSh2v++nb8kJwta97VppbGpCnoYk5NoOuIfn31eVWbQjpl2JVy0ZYyqBjF4Hkz57zilkCVb2MjAz0jq6jfVJJvHQJlSfJwjZvTEwjUtuU8lCn4WPvQut2XkjoylmWexSBiC2UXynFyM92OIAzuS8OE9L07Wz97BHo20Yv6RSX50iFQlqQPV/9pxxColnLaV0raCLoeV8seJWub9rFKoluGrMs7Nz9nQ+2Bn8YHWP3WbQs0pA00QjU5rj8h0BMQLloKqhSo7eVthp2kPCo6ouY+X/qrMS0dTHJLYmcNXk1BtShSFN+PZQSTkiKrc/vwPqTh1Kut1cvfmFMFnosS7Vyn+c4hUJakr8InEaie5PXr5biuk+RmJHF8JfG0lXcplizQzhV8p7V+lsP+h8dSNGvKrG+lTA4C7STvdtG8F/OLS3QCIFCWJB/GdKITyX1JSNLUj7PKKmkfktJqKc1WiujYzrrDXvlrUBBn27FWOOkrd+/LEOiqzfhxIgOlAOGipSD1QHrzMolwJ5LXNbJAEz6ZqbN/XBNg67GnWzkte5NT6jgFPIiv801O9+W02r0zdVLciZToz0Q0gaIN9ASEi5aCpE9jsv4Sw5/G5KneuZOYLotAlaYCrV1PzHUGr7cv6rsratCNvrduZZ3lXledsf75SBIi7UZQCJQllB9nJ65T86IVHTedvomcyqUexSQKaV3keLXI2ApoE6g0WVSgAaO/jLZQz4r+LSMTafeJCgmBsoS2QBV5Sg7VBGrTWdoEdDmeuWg8qPHIkBnzbnCzLaKkQbv9g7+Cu5CSdc9I+99/hGzfPgTKEsKPsxM70bt+Z7OuB5AyU2nF5DdyOi61qXSOY5vBiy4VbU4ZDvhzRw3ePQYhHnubV4PbI04DgbKkAoEaM6SujGmO1PK4rpZUoJ3aXqCWrHP60xm8ElA5g+72p6+olgp8eoGOB9q/rtR0Hb04MxAoSxL3wltmnhXoNHNRjWIyuZKftg9etC9o8zqRUO4UqLTx/iwqHruHfvnWtSSgWQSq/HHdWlMbSpDwa4dAWZJWoDaF7RWobR9drxjT9FgGgYoP0rzlk/PI9uCl5t5luoRB939pewSapQrfi+pByDeoV92TfusQKEsSD6S3XI7720DNn7XeMGosP5BMHcTMYpw9SL0zeD2dLWTQ/d+ZrwHUFGiuDNT6h9W+ovI56XcOgbKE8vNA513MD1bzraIdb7qE5vfKpReRlo26809f8GZfWYyi7aHb227sk1RRgUoZvf6mFHVFZaPEgwQgUJakF6j+q9wt0OXhvp5V1qN1a1fM8lDL1C7SBOo5nkeg2mR+hXZ7a/CdR/S2dpdMAl2/u26lV3w//1/fKGmpIFCWpH+gsl4p3P1DWh+OvNHhK7KIxWfTVsmr8moG6ktAfZ1I+oy0LXL2MuwSaOcUqC37HMgl0PWMKBJdaumKRqUCJi0VBMqSHI+zU3+ZBzNQ/ysm1gtCaZOcBZqyO6nv5XH8WxdiUAaq9mzkY78/bem2vWI/zto89eksJnYs1eszf7sQKEsyhNupOdmBNlDlNXHWn/36gApphW6slHZpX46k9L53GwnoRgba6UOg6AvUmOlwoBCo/OfNtm3w4Y8isk8INBGEi5aCLOEqV8Y5gToUKl24y/JOjGZK+nIkfSCTXwK+caCWXo+81/i2QLVKr20FVxVhrMKrp0n5U5G5zTd/EzMEypI84co/17MCtStUSzyXIy5bp7pc9E5e/3W5NZB+/GjfeXJC2jq2BerZVmmNVGv6+X2WfZADBMqSXOGuF8jucaCGQK0KnerAy8GWNDRxBqoMAPAJdFruH8Y052bm3rMQMgpU67g2l3vHSoh2imVcmqJU5kCgLMko0Pka2fdDsvrTplBHB47YPq0/JQvYrLKWY9+9OJlrtQFf05ZAfcpf/nwoqafcac4aCJQl+cI9KFC7Py0KnS9Fw6CJBar3RWspaTcnXGup9+w8bmG3jrZXoPZ+IM8BMg1jogkEypKMAp2vzl0/JFcCalHoWitUj5q0BdQYtbOUQnT/G4Xes+cUBXYeLqR0+h8tLSOFQN1AoCzJmYHuF6jXn7aK/LSRPLE779uP2p18lTv/zxi0wCjQ/QIN70cPGQfKGQiUJRnD3S3QLX26FKp0jCdOQKfjKQK9+ssd7EWSAtWn5W50CNQHBMqSnJ1I0+W5462c2/60KtQi0IR9SJ02dDOgwIE7T1Nm19GCRjFZBj/M41e3n/iCKnw0IFAyZAq3WzUT/k6kIH9aFNoZPksnUKPrPSRrDtx3mjK7DhdSNGuDyazPacK3cROjlZxAoCzJJdB1tErgDyncn6ZC9XGgqf25V6BBxSnQB7+7Br9svAw92DhIwwaFQFmS606knQLtdvnTIiVZoMkuW7nvffkYUtiwvSvti3FLbh4sqGD25dKoTv8OhneS7i8aEyBQluQIV9yiMzWChvyQ9urTfE6TKtD4MSkHkVKroJLvS0FFQ2tKtATUfTuVfVvpe/AdxXinc0tAoCzJ9DCRfpdAd/vTloHOrZPXlH3wyvDPuTUwqLRBO++kf1ILdCnWGom7SPpMWya+zJB29uTccQNAoCzJJ1AxlH54ptnW6rv9aVHofPUmHQQqV17nZzcHFjZo7/Oe1/+nQkpApdZcV4mMbV0Cnb/+RZtPDfsTAuVJ1nDHS+3JXpGTKsGH/OkcVZ/tWaBjih1a1rCdr/emJvVOJ7WAqiPj9RWtG8ujxsycXFrJcerbAAJlSX6B2rOQJY85qs9Jobb9pk1B1amoAlVGEyQVqFQoPaBeEqG1DMoTpOdVzWaA8fP4QOUUAdQABMqSvOFahluvTYd7GhGdBjXr8ZkeprwcLaZBPUeKiOJPsxFT/OtoGlUfwS+fSX1HLbeAQqBMySxQ5RKyCPOUPieF6oe0zYwWjzEjkUAzJKDOyoFUCNsK+jtMXDtpW58QKFNyh9uJR2KeTTb3GTRVNPp0hQJdXhsdOODUSC3DY3l6gkCjAIGSIbtAuxhV9T0GTdmNdDQD3Z2KpWyFWP15DXq2seuehW1aHkcPgfIke7hp7TnJQDtiwns59enAAu4uTsJ7AdbvbEpC95cluGqOKnwkIFAy5A93erdtOn0aggp61PohjvUhdWZvt9g8/EiRWN9aOustUKCqCkObN1v2JwTKkyICTW9Q5YjJKvG21oKQ0nXytvL9oJ5DJSi+XGDhzjAPGt1JU8tMwIY7LMrMthAoS8oINLdBU1Xijf6UkKJ1SgqqDjV3HylN8aUydaEC7SSUfW1u+7RrJBME6gQCJUMhgZ4aLx9kKeWYARf3Mcy2gkB99pJHNYPaBwElKLvoPxICdR5c3agzYpmXbH7JU+sNBHoaCJQMTAVqMWiSYDSDBBRrtaQwli5Om2ES+H/pPlKH5nq3MEKUM8rtPF9UPgILGLZaLUCgLOEqUK0Wn2wok3y34naRuuW98EuVeVSpmDXp1HK3TyZ/eg+knLJOi6sLGXALgUYCAiVDIwJNaFDpCBsF6uSrSNwx3kvGFIPZjWMk9megQJfVp2IbwW1+x3P/IQR6FgiUDKUEGn7T42H09sm0AvXHIzSlXkVrB3wvNYpaKvAJir16r7cK1OjuWR5NJ6+hhrj1FU9toMFFDF2xDiBQlnAWqGHQFJek6BPaKsq0nnYViR4kkdVJO1SPEbnkneLPqy7QVY1aC4U5bktyaGAnUnghg9esAgiUJYwFmmcs06wc6/GV/mpFoEsXvNKT5KrC76j3BpZZFGsquyZQJbOU+4jMKvpkfiVEDzsFysugEChLygm0iEHjhzMncbaja0N+lOC7eUy5libLoywtx4lVZFGmaVIT6PpEOm014xtdS2tZZEEMYwqMhZdBIVCWFBNolhQ0uUE7tz/nivsq0WFdIdBeVN/VG5K6ZZeWQ8Urs/rlaAIV+lzjmtPS8aN7j7ZF+glw/XVwljRotTqAQFnCWqDpb+n0+VN5SdtsonkgT9+Lavnqz1WgnkPFKLHmT4tAJavPgSxbOXZ6Nf5a9b2RbXbdfoPyUSgEyhLmAlUryOask0i5mfXw0oqiYtz3yp1H8+e+W7JSZ/liFNzSO9SpAtWSySV91gLSdjsvFM2lUs+YJEvR0NvtMCMEagMCJQNvgaq67K5xO5K6DX9eF1/Ma88lWvUiJ6MiXfUczjcZWGLze+muukDNvzq2b1NfqZNehSQmlvEF885Xh/iy0PHPye5slToQKEuYC1QfDBrVoO7+91U48uipbu2e6RbdiCX6oCvX8fyrbBTY5k/tpXD6d7Y2mfrcLsW1PjJbbd8dgnzStrCUkJc1JSBQlnAXaMJm0K38c5KKZqtx+ipSNK0PSVptUo55POdkSHm1uzfXbFFax/KVbftsaVZd/jYoyfRyOMkhtr8Z/NJOCQiUJfwFmqonfqqh7izCkzRmUmoDdY5m0ub2vunN4i7FEUni1Xy5iFWg2zsXYS7qV0svZmq3EejVA8W5gXFVAwTKEvYCNVPQmK2ge0vwpN5QLtVZRfGWevBVs5tR7F1haLX3xaG2iPZnuusQJ6lRQt2JredITVK32zCqBgJlCX+BGl3x0aqHofcC6BloJ2qr8166WS9LnVraUs/i5MMfKamkLPua10MCNZo0jcy2s+xqbX41XA6B+oBAydCAQM3BTHGuzuB7qWxVeK2yu8hT33JboCE1bEvnkWvV6xGBbo8QswvU1YcGgfqBQMnQgkD1wUyRDBoQQKeJpVP6ceZGUM+bnrWkTju+fzCQtJ11d+6ojgp0y6DOKrwlCgjUBwRKhiYEqnY0+0fkBLNd/kWLa8um9vy3fp3nuJ1eOaKl02Wu/nuKqbw4LiisI5XpbvMQQ0mfzFm91Z8QqBcIlAxtCHRtaxODMU+HsVmBX9MrMWmuYMs6bcVejim3GUr9UQHFDP2jYanD7/k63IexC3R5n7K+RN4sWqt1SSBQljQi0OtaV5yv85NRBPhzXdW+7pY+rRVbI5P162WvPi0CDWpj7TZvl+97U6Bz8mkVqIXACIgCgbKkMYEuz+h050lBQYTkn0srp2tl705Gs9gPveSe43rTyv5i7umw11cPaWSVte5e3yJQfcBo+EGrAwJlSTsCVYyj5GTKYMugTCewA34dr36kwM7K8zIY/7rGY29HFPtKL1Dx77q1+VVav1r7F87PnxAoTxoRqNyVsnwQJZIqkWHto7uceDDOLYFa9q93Mtnnb8WmfwPhAlXGg3bmgFv73yb7zMDSVgQEyhLOr/SwI3lFDARabk8K7GDKUfYDApXT6u5Q+tlHE+jUuBnSoQ+B7gcCJQPf1xq7kA4s16+ny36e648gStm3dmIbeC4O7zaoeOLo7s53JTavQNWRAF3XGQKd/p3+Lukltx3RVoxdha4CCJQlxQQawUHHcB25W0vll04Mf243jU4ZsXLY9fDaW9+MXR/VZ2+5zcA++lT6qDyxbzn+pFFNoLbsHgLdDwRKBgh0ma/ko54A8hR9blKQDis6akRp5XLbdby/L9u8qV0VXCe3e4iSyEO2RMlWjbp25Z+5t+D0gUBZUkig5Wrwnl4dWUPbQyu3jnIywmXgqnpwuQV3+dRLI1zVeHaem8l9njtI16xT+qosrwDpIFAdCJQlpQR6zi6nkATgTN58gxmDD7Iea7dNpVZFSYOdvere2UtmHyDkQ/5SpJq6uoYRjvlIewjUAgTKknYEukpzLMYiCPtAd6d99vhT2km4RdeCLYeUR1mu6/WaQJU1xn0c6UASt+jLhZGaOLvrVQ+k0zudRMOocZsUBBoJCJQMZQRapgY/+cFWJkcF2NrlEXIgVTvyYZZyuDc2lWJLY0fNiS3EasYtkHtOjNL+qexl+S6EYrWv1fGdTpFKJbHecmT/mvcUvA4gUJYUEmiAheLT+avmuqPsV7Zv/92aeTqOZFOhsReHZrSV1llKljv/MVjVFXpe5oJrh10ONo+rsn6trlxdbcWwlcY5P7TU9QCBsqShDDREJ7pCzRU2DjDvwnkj+5PlMI5yrjtw9Q9pAhXNEko9PtSgndlkKR9XuNleXvseV4HOfwEM1TrNCoF6gUDJ0FAGGnZRqgb1LtX3L2eCDgcsj9PQ+2H0lkW1Cm07WGcKtFctN/s8KGibPxXRe4qymYGKgC0D6zvxCk9tQUChKwMCZUkJgW7UYVMRnIpJmxhVS9t+7ameX6BK9Xipe4fHYstAdcctnU/bIbtuYhUKXItqi98n0HU0vZGBiu/M/PIgUD8QKBkKCLTz5nHpCL0ofaNBHcmgvXfZMlu+itTGQWcTozUUZf2lv10znNS55I9XbOVsoRRr7BZoJ92N1OkDnpYvyDDoOlLCWeDqFAuBsqSIQClX4XtltLp2DTsGPO0IXr6KFrP0osbvqiVrx1uNqxRTTxHltlFPsJ2x/rKo7+c73X3lcr4oWiroOKkP0FcGuDoEKqXn6h+b6oBAWVImAw1UXlzCLzt1FKQ0O3Cskyd421XUGU8kDWhp7ZRGUD1V1AN2ldIuXGWjTh7BZC2Qy2lT/ql1cSnl7/VlOvYl9liIA4GypEgnUpkEdMd1p41mWtVkdPTsD95yNGWwueQMSwyKj9QbJ5dRVLaIHZVhZedamRZzrnPs36tTa53yOBFlRX19cwirsk+XXisCAmVJGwK1djF78NVXl126hiptBG87mnt0jxhc6njKR7eGZ0rXkuO5o5QXTqsaa9sNOu/XmYOaEtwIeVlD3tay88qAQFlSphf+pA/3sj9fcZdwvdf7WPC2g9n7oNVMy+a/tQ4/J5/ddAflGrd6FHUX+p2h0hJH6a0GnWvp9q4kOQXt1tq+5duzniMI1A4ESoYiAj2vxH3s153H8eJ+pngCNQ9un23LQNUUVNw1FBK3L1l1buIehWA/lGxFKakOPSEQqB0IlAxtCHR/KX3dONcDdfcl+JBj+zq1tfXUVlCRh17luY6dub8ht97sKaivDq80DTytKXWYRNXq/9batIFAWQKB2gm54+hQ8Me3FYaUp+UBA/2S3Iks1HJ7+7KtP6I9Oeh8M5HjkSLyzqd7KLS2CW/I8gcIdAECJQMEasfTjXTmQj57FUnmUZ/v0clc5/uaRM+T7iotRbU1SHpKYH4hsxXNsvZ9J39hs0B7+f/+cG2xV5qKQqAsKTEONHsf0pFiOkp58vI9fxUtD+gQ9/VIdyOt2aeahyrWkZNId03dGaWRg7rq5EtX2HqUp06+Z8qnaXUf6ryA7SgCgbIEAnXhGPR4MvgIV5GSbEp1+NE3qj/X7FSr3Puj8ed5+ugnl0DXfS3Rr5lqWCppF2idlXkIlCUNCPSo9OzNfSeDj3UVrc5ayqaqdR63qSkzOJpAg4oD9WY/zypQZadirUCBmqt0jjH3YUouBwTKEv4CPX5RaeqJcYHGvIq0Ai7NiiLLW/zqcqipNm3nzuMqe1g31MedyrtR1DmXPeDrtBl0cyOSQKAs4d+JdOZ665TulijBR9iJxJqEdlfJmp0iT6c/lWzQYlD3UcUexNbWLeThodPun+RSB6aMxjoQKARKB/YCPes94ac4l21sgfbS+PQ1CVUF6eoOuxrtohYBOo4pr74azpLDKqpcoxfmDvrzphcrYBOCQKAsYS3QsFriFjEb1xIItJctqKbMvsfQKT30yzx9z85DymsrPfzrOmvRpqZSW/SB36utcbU2IFCWMBcotYstlUB7o6JuVN2NpdaP+q5dh1RH9CtFEZ+X/4sBq1aBBp0hCFQFAiUDb4FmD26LNAIV/3oG/1twrGfbteWYukBFc4E+d7WqOaA/tA6vSpPeWQ0CAmUJZ4GSyz/TCrQXaaglGRVLe9H97bCtbjhH64U6V+q96i0CFkPpbU0hoY0sEKgCBEoGQmMBjwAAIABJREFUxs8DJejPxAKdptYhoqIb3tjg6kxWzS/NYlBtn1r3v7xk+r8Q6JNtUFLQeVJ8vb06RSBQlpQRqLtvI6I/s0cWQHqBqkscbYzq96+Mi7eNXLcpWi+ATaD6WPonazIbbFDLCPrtDckAgbKkzHvhe+fgmkA5bm9M89pKIdAjKZnyJ0x/toj1Th95Q2NnYpGm4KXtYJ62CTQ4BbWzL+ySQKAU+Pzucrn7+5dp4uvfLpfLjx/l5a//utdn9X+8vfy8fHzzSd1hMYGeqsc730u3eIHopZVEoEeQDLqqVBtVb3GV1VrrKvMzTZYFvbqRXaABIlzWIXpaQ4BACfB4Gfl2tODL/Thx9+u6/ObKgcmSn3+43P1zminWoSTQMwZ1CVRq/sseVxDZBBqW1a1/dLrluXPd9CVa1nZ+s5I/jYS1l87Ik2XrkHRyXUb1vAYAgZbn5X4w4td3l+9vE68fLt997L/e/v9lWeFBmvV8s+bXt+8nq34/Lacl0MMGXWuZpj9pk1GgofXiq649Z6rntJx679O6Lz1vtW3edWsnk7uU68R2VESBQMvzMNXFX+4HDU7/vzlxTUHlWa8fbu7sn28qvU3+cHk/rkBKoHpfxg6BrjuwzydLToEGKVSS3NJp7qwrhwi0V5JKZbuus7wLpVuffeKMQ25V3Y6JKBAoGSYNPk9p5S0RfS8WPM6Z5uNNtK+/DF59+fOnYfX/TmalJtDeO/o7zKDbjwemRL420NDnDpvp3aQzx7pusXbr46p0g0oJqE2gzlYDM+mFQEcg0FO83A9VdEsG+jC7dHCrnIG++TSrlZ5AtQ7hvQLt5Za8rGEcg0wnkg25ndEhUI9YtZRzna1MGzuYZnb2IxrKreIk24FAqfD7/ejJpQ30e7Hg9cPs0tGwUhvom09znioJ9JuZJwLsF6i69UipwrNBfIXjv/av0/E1L/p0LZs2tK/k2di2sjeEVoBAj/Nwudz9e/z0+tvY5f7T0oekClTqhb9Zc8pXiQp0t0GNywjX1XnEd3hEoFMVwLGJKsjO0KBPvubOXMVvCQj0MK+//OX+cveP4ePLu2lM0zLqUxKoXFOfrPkwZKoUq/AjOw1abU2OcBV+rW9713Fvul27H6N3vMDTXv3v9PXU5u+tmCiBKjwZPo91+Jf7Ifm8paFLG6iWgQoma45tpWQF2opB6Qq0U3Cv5N7WtWQ6X8MKk0AtDZ7yUX3lkGfV9guAQOnwPAz0nMc0TanliFeg40Z0BbpzWH1l2ccCVYEad7e7xmQ6tnb7czlfQqA23Uq+9Ftc1qwvHoJAoHQYBGmzpdwLvyKseTMuZYHubQbNXOw4UBWogcNPrrmu1W0CtdS+pxnddFfprE97LWM7S17KT8yxEGhxliGfLoE+zknp43Lz+4Cw5q0S/x+6At2fg2YtdSSqEagjx3NnoK4FNoG6tteaQt073RBokGJzA4GWR9TWx3/NKrxtaGgv9Rw9X/50T1igew2as9CxqEigVlvuGl/fy4N0l04kfS++jfc7kKI6JyDQ8ij9Rs8XvRNpSFG/1W+Pl7veH8RzRlZICXSPQUleJJtUJVBLxXynQDv1Loe1Ch+w7TEZ0v1ZQKAEeJ6exnQ31uTnRzONiejL/ajRr/LTmASrQG8CpizQXSko2QvFS10CNXVkF6jjr9nUlHldb/Hc+VI50RYaXFzK/oRASTA8AvROPO/zf4bngf51nJgF2n/91/CI0C/KNlLP0SMXgdKspW1TmUANIblEad/4ulbgxxnSg7j8W2p7Dz/XhH8WEChLCAhUGtrHvAJfn0B1ZTp6xh2bzhnocrakXvjeX3s39hNYWMI/CwiUJcUFKo1X4V+Dr1Cgeo+PbQ1fI6ZdoP0Of/qOcGi1MkCgLCkt0LmRTBrxElR/J32peKhQoOorhYOemSTNV9pblOj31cx964q+Jto/CgiUJYUFKr9VYkf6SftS8VClQDv7Z2mm3aBSH7zWBurclbsM/jGhZAcvrUCgLCkt0B3alBPQ7KWORI0CVUcd2VewnpNOHkY/zDguUNEOqj8dtLN+JgkEypIKBVptD1JfqUDlbr7OlvMFCHSccUKgtruL6vodQKAsKSnQ7sAjRNa3R1ZJjQLVpWkTqE1ma7tMhAx0vlNe3f++HRQGAmVJUYHua/mcut5rrsDXKVAPvvvWlbM7LT8lUH28fm2/AwiUJeUE2u32Z61jlyS4CdTTg6O+MNmdvu46mjxxrujZgUBZUkSgy2vddwm0tpTDBleB2m6b3+TI4daPJ4ueHQiUJWUEulufxy44enAT6PrJ3gaqnrVzVXhZoBX+GiBQlpQRqKzFAJVWeLk4aEmgZnO1HP2hU7qVvVL+oUCgLCmVga5utKpUNSrdq2IvEKi00LGZ73g+fx5sF8gFBMqSQp1Ii0Hn1zholXUtMaV7VeyFj0A1XVmfOucT6Lhw37PqPPfP03bnCATKklK98PIIF3t7p5KQZi9lIvgK1GYwr0D3Z4zLz8JWlB37KQMEypLyAjVbPMVQ+U66Vz57MdPASKD6tN1syrT1gco7HskknuJ0dA9FgUBZUroK7+w2mtfurqwMylegth6cbYHu6PfReuDXWkrY5sWBQFlSSqB+fy6VdvWdOvXDV6C2Crk+xx598MM+JYNu9MZTBAJlCcEqvMWgNV0oXtgK1O6zQIGGGlQ7mHszir8XCJQldAU6XwRzRxLBK+IItQu0s3wapxxKU2e53wsfdGzlRk4IlCiEi5YCsgK9ajW27OVMQuUCdVee3XOlyXMCtTvbUjKaPxcIlCV0BSobNHshU1G5QBecgzH1GX2IQENTUMvxVuQhxCF7yw0EypJiT2PakYIygrNAO/2ZIobM3NEHSc9xs1O3dMtbRjnRAQJlCWWBZi9aepgI1CqpaVyRMkMzqCf6EO/ZbxeV/z85nOYPBwJlCV2B0rwMTsJaoHol3khJfdGHGdTSS2VdjeCPBwJlSdZw5ceSd93GYHqyjVln4C3QzhBoaBXetc+NdZy/EIK/HAiUJXnDHX7X8is9mmsG5SJQ60xdmMafwA2B7q7Eu7cg+MOBQFmSW6A35HcitWZQ/gJV56hr+KMPS0E7xwR5IFCWZA63k96tOHzeEii3llAeAvU8z9g7HHMj+sBmULHfuvwJgfIkv0DntDIg/YRAieLohDfQz95m9IHtoB5H0wUCZUnucOdb27vAN8LXc32EwV6g2hx1lSgC9R6SMBAoS4oI9Ko/hr4VfzIRqL0NtLd08mw/zs67g5Ci1PITgUBZUkiggVRzdYTCRaDuRlBtMrwX3r9n3xZ1/EogUJZkF+g+g6INlCS+XiRtWp7civ5gjRwCpQThoqWAvEBrSTDCqF+g/q4bdcneDPToma7iBwKBsiR7uGFtn1zT0PoFOhI4gn13FR4CDQMCJUN+gQY9yM5MQ3OXMw1MBOrpRerUtcJv5fTtNs1meYFAWZI/3JAUVBcom+4k/gJV19pxL7y5eXhpavhxQKAsKSDQna2gQqLZC5oC9gK96lX4XQI9nIJW8OuAQFlSQqCnDDpekhVcL3a4C9TyQFBpOiAD5VuJh0BZUuJ5oMcMur5krqvherHTgEDNRyovk6naQKtIQSFQlhR5oPJ8p/Rxg1arUDYCXesD3qHz6qCnVMOYzm2aCQiUJcVeKnegLVRcIxBocWSBrn3t1iGi0rzNpzGdKlFH+6YkCJQlxV7pcaA3abk4SF8oXqoXqOWZS0uW6TwrYsHpByoHlEvsidwPBAJlSUGB7u1O0hrXshc8BtULdMTwpmQv1/rDv2ffieQtklQ0ko9pgkBZUlKgO3NQRaCVDmviIVBLZd2nrC5AoJH8KZWDmkEhUJYUFei+ZzMZAl2vlcwhHIeXQK3Nna4Kfu9/L/zZ8milGD+c22dkIFCW1CXQNdEYp67L0+2zR3EQ9gJ1rTx+cEV/Plk0S3Jyh/GBQFlSVqB7DKp0UywCvS69BlXATKCdPte3sk+gp4sTfZfRgUBZUjgD3dEKqtQGx3fTTf+bdkKz59WAtUBdf8fW7iZ79OdPm+XA5H4LEChL6hGoJNFepK7TpLQwezQ7YSJQhz/d619tGyz7ilCeFHuNCwTKktIC3eXPRZT2uj+9i8aAh0A7i0C9X/7Q4tKZb+nc3G5HiUJmFQUCZUnpNtCDt8Vbt6sgBWUh0M4q0I1N5pYWc1dxSmSdSerXAIGypLBAjz7czqVVUpeMBRYCFcLSMtDtjYJbTY+VJ2xuKSBQlpQW6IEbOud2T2ND6aZssjAR6Iz+3JCt9YcHce3b4khB5ANE2n8MIFCWFBfooRy0U3qPxMxxb9nj2QUvgarsFGjM+oL7HtJYRzgPBMqSEg9UNmYc7UvqtBnGE3zJwVmg27oaBCo9tynDgQn9GCBQluQJV73RzrL8gECv+hPxZqESumZMWhfo/KSkyH/mPOOnYh7mHBAoSzKEq2QbYhin/tzd4c1xB14Zr82YE1G68Bbo1gpD9J3+prkIx3UnoIR+DBAoS3KEqwp0asDUE0Vbo2aAQ60zM4R0FM4CDWkD3ay8H0lO/fvbu7dUQKAsyRKufNFINw6Z6+0VqOLNbnq4CARahqBeeN96ttGlgYf2Fmv37tIAgbIkUxuoLNBEBrUO76YGW4EGfe/z21x8Au03c1Tbht6le3aVEAiUJZnC7ZZBmlJF3bxOzgyrX+xJ5YqxwVWgYcrzVuGVv7G7FLp1ExSNP6sQKEvyCXRNMCTpGeudSkFte6QFX4GGrDW+0dohM9tNSmHj0kLugSJQlYdAWZJNoGPrpC5Qoxp/9s7O4pfJBo0LtBNPdTWSQosn57dsbjo08JSX/mlAoCzJFe5082Xf6Y+wi1mJr8CgXAUapKfFhKtFfZsrDee+3UYsYkIgUJbkE2g3N1M+acPfjRVPGjRTQMdoV6DTubfMC2qh9I5UCilfX3xQKATKkmxV+F4MM7oZ1CO8A4NBazIoV4EGGPB26o3ogwdOxBBo4e5FCJQlGQfSixuFnjyNoLtvR4JASbDxpc+SPBG9726jHTsp+OOAQFmSayD99M91rsY7dRfj6aCUDcpUoBtiEjnmmeij3O8OgaaHcNFSkEeg4l/NnobtznchQaAl8HfyLInfKYE600fK51sCAmVJ3nA7E3XpOXt2EGgRfFVj+Ryfit51EOLjLhYgUJZkDtd8jPw8exzxd0af876IG5SrQN1L5GUno3feAnpqr7mAQFmSO1yjEj9ZT31Hx8FUdBpeCIFmx6kw7cku56J3H+XMXrMBgbKkwCs9OuNeJOuj5Q8blHJG0pRAjVNxUqA7D08MCJQlJd6JZNGlPCl12e83KPGLiadAre2TlnNxNgOtOgWFQFlSXqCaQdf7/Q4JlPi9nEwFasrN+qfsbPROgZI+5zMQKEuKCFRvBpUNut4efUCg14742+G5ClRzmOMcpBMo3TO+AIGypMhrjfWeJKkHXnn5xwGB0vYnW4Eq37rzFJzthfcOljq16wxAoCwp8154/YWaSw+8fB0cfWE85Ucy8RToNAhNul3CsV6aYUwBCykAgbKkjEB7hx61cfVHBDr+n+xIJpYC7eandq5TDk5noL5HilA95QIIlCXFBDo/Y9lj0IONoBBoZuS7yvxNKCkFSj4FhUBZUk6g1ls3TwtU7Cd7WGHwFqhiUsuaSavwVE+5AAJlSUmB2irp8yDQ8X8QaBXM7zma6vHTjDS98FUnoBAoT+gJdOWEQKkalKlA13M3z0kjUF8ZiJ7wFQiUJWUFandfJy5HCLQC1vO09sRDoCYQKEsICjQKRK8nlgJdvvNOGcpkOi1hGyjR8y0BgbIEAs0KS4HK9+FKc2PfC+/PQE/tOQcQKEuYCpTqBcVNoFpjtXY7UuyHiXiWndlxHiBQllDrRIJAq0Lv7fPfz3nyifS+hSd2nAkIlCVFBZouBaXaqcBPoM4/XLGfxrTx3qUTe84DBMoSpgKl2ggKgZ44lr8gZ3adAwiUJYUFGt+g65gainAX6FXuRTLWTipQmid8BQJlSVmBxk9BbY91IgQzgZpjdb3PZEooUPrNoBAoS0oLNLZBp6fZkc1HGAnUfruYPJDJ2CTJa409xyMFBMqSwgKNblDxNAuilxMfgbrut5VSUGMbCDQSECgZSgs0TT8S2RyUkUDH/7meBmP32Znot88nyRO+AoGypHgVPt1IpuyRBdCGQBM8zi7g7yHNP5kLEChLSg9j2u/PUOWSvJz4C/TaJXmcXcjZpG1QCJQl1Qm0C203JXk1MRJo1zsE6m4/SSxQ2pV4CJQltd0LH/yoZZqNoHwE2nf2P2VpXukRdjJJnnIBBMoSqgJ1NY52GxtiHGg2LALdGABxRqDVp6AQKEsIC9S6dFugnacOWRxOAlWepSx962leKhd0Rome9REIlCVkn8bkFajLoHTNOcNOoOLtAcpc1/rnBLp5bmmffAiUJVQzULdYPVuSvoBGeAm0n/8Gqt97qtcaVz6SHgJlSaUCNTedExTiOSg7gU7v5NTmuNY9/1547WlP0jTt895DoEypTqCOfnjpzkLKVxI/gZrm6iJi2a98XGma8EmfgEBZUp9AR4O62kCpN4MyFKhODGlaz6D00vnxw6TPjReB0gECZUnpgfSHBOrpfKJ9EfEXqNdjQdF3jhtB9fctidV8Ty+hBATKkgoF6rt7ifY1xF+gRr1bIVCg1qGkRnV++WjMoQkEypJKBTpcpxX6swGB+lQWFv3cuGnZs+uIvuVkgEBZUqFAu7ntq0J/shdoP4+EsC8MjN7sP+rdnUS+J+CTAgKlwOd3l8vd37/cPr1+uAjefFqWf/3bbfrHj8o2f7y9/Lx8lNYdIfxOpLlPwTJ/3NRcFwItztrRY1saGr21A961rnUDgkCgBHicjPntJ4dAX+7HGXe/DhOff7jc/bMfBTrNoCdQx/NA59FInV2hpkBrGAE60YZAXflgePSSEa35qHrEsUayp5glgEDL83I/GPHru8v3yrxfxeebVL/72H+9/f+Woz7f5n99+34UqNiAnEDVJFQIc/mfuHxsqakmVPpX0AB3ga6ceyK91JPkejqztGoFfzkhUAo8THXxl/tVgzdn/rwsnxf88fbmztcPN3f2zzeV3iZ/uLwfVyAo0H59fpI8FFDuZrW9eGed14mVWruKiGM5ITsEKoZ5igxz8y5O8j8ACJQMsgYfx2xz5nnKNG9Sfd+//jIkpi9//jSs/t9ZuRQFKt1hIoZImz2wlnq+JNCO/B1IgoYEajmP1ug7iyLFEPlOw3Mo8okoBEqGl/tFmrfq+Xt5gT0DffPpcVIrSYFuY28pVVpMr1QfoazSlEANg5rRi8brNdvsl8xzWdYrK4UfjhYQKBV+v1+l+Sg3h65toMNMqQ30zacxKVUE+s3MUwVYepKsIu1KFxSobJ2RJbV8kv6dNluW6CsfPxofINDjPFwud/8WE2OuKfH629gL/9OYoK698DdrTslppQJ92hbo1sUFijAo0b9YnTS1aa4QujfGQKCHef3lL/eXu3/MU89yC+iNl3fTMCdlIOhkzYchLa20Cr9ViZ+bQiugrSp8rzVums3f5uob3er+ZUdKmAtU4cnwWdTh54r5wsv9kHze0lAlL52sOSarfAVK+tpZgUC1hebqvfe1Sj69QqAUIFy0BZF4yuOZBuZhTlO2uTBbc9ioWoFu9MRDoFRRbGgK1Fx96kEK3aOx8bFS5gACpYPohn9WRHlLSOfMU+qm79d6+02vFQt0w6CErxyZ5gQ6sGjNuIfCIdCNgfOuG51oj2SCQIuz1NiFIB+kQfT9pkBvlfj/VC3QjdGgNdCkQBchqtH76unevbk2hkApQLhoS9X8QQyYV/vg/VX4IWH90329AvUblO6Fo9CmQIXatMcg+Nb37ax31+Mh0OIQLpreSWRUyJ8v7k6kgQflyU0jEGhW2hToOjhJnunfYHtvG4+tpwYESoDn6fFLd2pNvl8eKTI/rUmt2a8CvQm4YoF6W0HpXjgKjQp0/N9g0HXW1gNCNvdpf279gdJlAgKlwPC8zzvxvE9pFKh4JtP/DM8D/av+PNDFmo9VC9T3/GXCV45M4wKVHxBzUqD2pzQhAy0O4aKloCaBIgOtlPWBWevz4/0bhKSg657VLXcXLw8QKEsg0Ky0LNBb9PPbjjYtF/h4Ots6EGhhCBctBUwESnsEy0rjAn1yd/+oG4j0MsC0m3OIAIGyhIlAFYkGXaNlaF2gyqRng2Wo0qZq7dsSBAJlCSOBLjX5jm6dHgIN22B9TuhGg6itJ57/qYdAyVCPQLvtJzJdp8fSQ6DEOCbQXhKo+6WclseR8D/1ECgZqhFoF5SBTjV5uq/3aFOggp0CFZ+63pNW6r6EQAtDuGgpqEWgIhUJUeiV7EUEgYYhnb61YTtg5X65T+lI8dICgbKkEoFOjWLXQIHSNSgEGoZ09gx/Wh8iqk0QPP0QKEvqEKi4iML0KSQ6bRq18GeBQA8i5aH+DFMIlNZ57yFQplQi0PmfXQa9EqzMMRfoxpd9RqBiVFPXex+4PJ9xWmd9BAJlSR0CndkpUKFQQlcTb4FufdPnohdq9I1s8jyoqTQQKEtqEmhoH5Is0Nt/lLrkWQt001sxou/WF8hP0/K/4j5RigqFQFlSmUB3GnTegs7FxFmg29JKEb3SSz+68zrW88kpFAJlSW0CPZKDEkpBGQs0wFhpopd6C2eBLrfSUwICZUlNAj2Qgq6ZaMQITsBXoCFfcdLop6q71EdP5ZzPDMHHKhIESoaqBHqgG4mYQjkLdHudxNFrPUhETrngFny0EkGgZKhNoAf9SUWhfAUaQvrolR54Emd84Uk8DTUCECgZ2hEoCYVCoKnRbktKf8BN5hLdBDpPnS8VBEqGqgR6tAmUjkIh0MToN8YnP+AmwphjBjrPOLtPCJQMbQn0WnpIEwSaGP3ZTMkPuIl4e+hTxLYFCJQMVQk0hkIh0HLkqcLLgiovUOvQ/rMGhUDJUJlAT/TDQ6DFydQGWvBeTss7mvpZokrwJwsIgZKhGoEu7UcQaLXki77MWbaZW7ycRAseAmVCPQJdOKXPwt0KEGgeCpzmTr9Lf54pPuoCPfNThEDJUI1AF84YtHivLASah+WlSrkO6HgQqTSlB3/GoBAoGWoU6PG7keJEcAIINBPZ7+ZUHmqyzlw/G8GfMCgESob6BHp4ND0Bf0KgeUh6O6d9l92a9Ypmz84vUKV0+woKgZKhRoEeNCgEWppc0a8d8V2CJFTq5VfuvF/+7YQ9lWPbgl/T1n1tohAoGSoU6PFnMkUp/ykg0ByI5zLNE5FHNUlPfFoGeSoZpP2IjuClbSHQCqlOoGd64ssbFALNwPJs5Wkq9sOVpaZOKX3UCmAe0BX8kcJBoGSoTqBnhoKWr8RDoBlYGiHl6RS735U54oHKLKlQoAftScKgEGgO9O7wuJV4s/0zCAiUJRUKdHpT3EGDxonhMBBoDixii/mn0zricxMIlCVVCrTeZlAINAeWkxy1EfSQjSFQltQn0IlKDQqBZsC8Hz1qL9LBfUGgLKlVoJUaFALNgPLguGlG9F74/UCgLGlQoCUNCoFmwPJOj2jn/LiLIVCW1CbQZeTI4dH0yECLkT0DjX8n5/EdQqAsqUmg8uPCKr0dCQLNgDwCNE4GKu7MPCNkCJQlNQlUufX4kD2RgRYl48NExL8RBNrJHN8NBMqSqgQ6PAt0vTYOKzROHIeAQPOwivO0+MSoz/5M/b2HQJlSnUCvSyPoUYGWNCgEmgf9bqFD6jufdcpAoCypS6BTCjq3SB0WaEGDQqCZUB+ofMiC8/s9Y/1YIFCWVCbQWZzVvlkOAs2Eknges2Dk1nIIlCW1CfTUs0Qkg9oujviDXgwg0Ex055suI/8YIFCW1CbQs7nnYlBzxxn8CYHmY3ng3NHTigz0EISLloLKBBpJn1ctB81jzx4CzXq4+azS8CcEypN6BHq+78hp0KldNVJ8XiDQnMhPPd6/cdyyQKA8qUag61jm+AYdd3l6oF8IEGhW1hr87jMbvUoCgbKkFoHGq7vLCpV3DoEmp0T0+lszw9eHQA9BuGgpqEagKQyq3Be6viUsIRBobnYKVPImBHoIwkVLQS0CTZOCituaJpt28dMOHQg0NztP6DL8CRnoQQgXLQWNC3RKQjvxOXlXEgSamb0aPNdz7wMCZUnrAh0N2ilTKYFAM7P7fE799gmqIhAoS5oX6FXu10cnUlLoZ6Bz/pmiKQcCZQkEqsk0crQaEGhu9p3RhOcfAmVJPQLNYdDkNyRBoLkJOaHyO0CSFQQCZUk1As2SgkKgSSkS/fp6D8dy5bGfEOhZCBctBRAoBJoN8gJNef4hUJZAoLpAo7wAxwUEmpvt6nm3PGYBAo0A4aKlAAK1OFQckXZXbH0U6YXfEqi4X7478+i7ACBQlkCgFoeux6T8SJ76yB99t6ixt7VvdvLcVLWOGQiUJfUINJ9Bu3QGhUDzolTN7Q/R7tSVkxUFAmUJBGozqHTQuJcUBJqXxYm20yhnp+mBQFkCgfoFGhkINDPr+CT9pOZT5wQEyhII1GrQVNcWBJqZdXySuSRvSSBQlkCgWQ0KgZbAmmxCoGkgXLQU1CTQnAZNVI2HQEvgeIl13kJAoCypSKB9zBcibQs0yQUGgRbAfiYh0DQQLloKahJon7kaPx8y5oUGgZYAAs0I4aKlAAJ1C/TY6xy9QKAlcKSgeQsBgbIEAvUYtI+ep0CgRbDenQuBJoFw0VJQk0CztoFexxQUt3LGpFz0nahOQKCpIVy0FFQl0Jz2nA0aGQi0ENpw0LS3vVuBQFlSjUDnJ8xlNmjk2CHQYqgvO8ptzx4CZUpFAh2r1CUEGjFZgUCLoTzvM78/IVCe1CJQ8b7uvAaN/mBlCLQcs0A75Rl2+YBAWVKNQMUFkFWg0evwEGhBllp89vbPAQiUJbUIdCJ7MygEGhPhuEdWAAAVJUlEQVQK0ed9hp0EBMqSugSafyRTtLAnKCikHBSiL+HOEQiUJdUJNKc+IdC4UIgeAk0M4aKloDKB5u9FihX2BAWFlINC9BBoYggXLQW1CTT7QKa4fQ4UFFIOCtFDoIkhXLQU1CbQ7HV43AsfDxLRlzIoBMoSCBQCzQaN6MuMYoJAeQKBbhk0VtwjNBRSCirRF1EoBMoS6gLVWiCz+xMCjQih6PMrFAJlCXWBLgYt8jCRa+w6PCGFFIBU9HgaUxoIFy0F5AU6MAo0uzoh0NhQih4ZaCIIFy0F9Qi0kEEh0HgQij5/IygEypIaBFqq9j4btGzwnCAUPTqRUkG4aCkgL9BOPMcRAq0eOtGjFz4ZhIuWAvICnRgFWkaiEGg06EQPgSaDcNFSUJFAuzI9SRBoNOhELz+dPhMQKEsqEegMBFo1hKKXnnHQ5XnGMgTKkpoEWmggKI3gOUAtevk9cxBoJAgXLQUVCbTYQCYKwbOAXPTy0+kh0DgQLloKahJoGX9CoNEgF/3QFLp8TnwsCJQllQm0QB0+at2OnEKyQi96WaCJDQqBsqQmgc5DQgepQaA1Qi96CDQ6hIuWgooEOjNptFKD0lNITuhFL3W+p+6Hh0BZUp9AR7IKNEJ5BfQUkhN60cvWTDyUCQJlSZ0CrfbVxvQUkhPq0UOgESBctBRAoFkNSl0haSEePTLQGBAuWgqqFGjudxtHiHqGuEISQzx6CDQGhIuWgioFmtmgEGgkyEef0qAQKEvqFGhOg0bNS8grJCnko4dAz0O4aCmoVKD5FBq3b5a8QpJCPnoI9DyEi5aCGgUqbl7OlYVCoJEgHz3aQM9DuGgpqFCgS06YrRof77oir5CkkI8eGeh5CBctBfUJdEg8pweQ5fInBBoJ+tEnfDAoBEqBz+8ul7u/f7l9ev1wEbz5tCx//e3+cvnTP5Vt/nh7+Xn5KK07UqFAR6VlvZsTAo1DHdEnMigESoDHyZjffnII9Ovbac5Pw8TnHy53g0pvAr37dVrOQKCi5TPnSCYINA6VRA+BnoFw0fqX+8GIX99dvlfm/So+36T67cf+9X+Pwny+/e/r2/ejQMUGHASaz5urQKNdUpUoJBF1RI8M9BSEi9Y/THXxl/tVgzdn/rwsf56T0cebMF8/vB/mfPflZs27Hy7vxxXqF2iZF3NCoFGoIfpkjaAQKBlkDT5evvsiPt9k+n5Z6fWXITF9+fOnYfX/zsrlINASr0WCQKNQQfToRDoL4aIJXu4Xad6q56szFT3KGeibT49TJb5+gfZFklAINAr0o5ff8REZCJQKv9+v0nxUm0O/+/L7D5fLt/8epqQ20Def5uRUEug3M08Vkv+1HqUjBrnoajjXEOhxHi6Xu3+LiT/erj1Io0D/NfXCj82iay/8zZpTuykTgWY3aA0XFYjBzZ8dfYdCoId5/eUv95e7f8xTz1IL6DB1ufz0pX/97SJrdbbmw5CrsqjCD2R+HBOq8FGoIPrphTEp9owqPBk+izq80ms0CnTqkX+QK/azNcdkFQI9aNAIRR6pQCEJqSH6ZPciQaB0EImnPJ6pl4aESr1M/ZJ2DhuxEWjml3pAoFGoIfpkt8NDoHQQgnxWMs3Vp6pYhTUfLj8zEmidr5WrQSHpqCF6jAM9CeGiLTV2IdAHaRD9uHzOQNWmUWHNWyX+P2wEOlW1VuZMMc0dnhBoHKqIHgI9B+GiLW2b87+LMM3lsliXtPP58qd7NgKVmZ4sMvzw0wyzh0DjUEn0EOgZCBftlnkqvexGhfy2/MePjl74gQflyU0jdQt0zhYGgU4fEwkUbaBRqCR6CPQMhIs2DVS6cafW5Pul/+j5Xl4+swr0Jlh2Ap16TZdnLKdpG4VAo1BJ9OiFPwPhot34+rebHm9Z5ojU1Ck64L/+66bQv35UtpES1UdmAjWAQClTS/RJmkEhUJYwE2ii4U0QaBTqiR4CPQzhoqWAnUDTZKCxUpJ6FJKCeqLv4g9ngkBZwk2gyQwap3T1KCQF9UQ/tatH3SUEyhJ2AqVdia9HISmoJ/ppSFzUXUKgLOEn0DQ5aKSrqR6FpKCu6CHQQxAuWgoYCjSRQaMUrS6FxKau6CN3JEGgLOEo0Hl46FW6yRMCpUBd0UOghyBctBTwFGg/NoVOdykt98mfc2mcCl1dColNXdGjCn8IwkVLAUuBDqzDUEZzTr0CxVPQuhQSm8qih0CPQLhoKWArUHkg3+rS0iloZQqJTGXRx01BIVCW8BWo9fd/JgmFQM9SWfQQ6BEIFy0FjAVq57hBY1xPlSkkMrVFH9WgEChLINCsKWhtColLddFDoPshXLQUtCfQEyno+aNXp5CoVBc9BLofwkVLQXMCPVWHP31BlQ6+LE1HD4GypEGBlqzElw6+LE1HD4GypD2BFm0FLR58UZqOHgJlSYsCLdgRXzz4ojQdPQTKkgYFWjIFLR98SZqOHgJlCQSaNQUtH3xJmo4eAmVJgwIVj2oqYdDiwRel6eghUJa0KNBrN7+y4ZBBTx27ePBFaTp6CJQlLQp0fUxT9hS0ePBFaTp6CJQlDQpUusX5kEHPHLp88CVpOnoIlCUtCnQlewpKKfj8NB09BMoSCDRrCkop+Pw0HT0EypLGBXrkPR9nUlBKween6eghUJa0LdD+0HvnINCDNB09BMqSxgXaC4fu0SgEepCmo4dAWQKBTq+b2zUs9LhBqQWfl6ajh0BZAoEuhBsUAj1G09FDoCyBQCXSG5Rw8BloOnoIlCUQqERwDgqBHqLp6CFQlkCgEhBoWpqOHgJlCQQqkb4biXDwGWg6egiUJRDoSoZ+eLrB56Dp6CFQlkCgC3sG1EOgR2g6egiUJRCoYN8NSQcNSjX4PDQdPQTKEgh0AQJNTdPRQ6AsgUBXMtTh6Qafg6ajh0BZAoFKpO9FIhx8BpqOHgJlCQSqMCg0SKMQ6AGajh4CZQkEqhL6XCYI9ABNRw+BsgQC1RieywSBpqHp6CFQlkCgJiEpKAR6gKajh0BZAoFagEDT0HT0EChLIFALEGgamo4eAmUJBGohoA4PgR6g6eghUJZAoDY2BXr0zZw1BJ+OpqOHQFkCgVoxc1BtdBMEeoCmo4dAWQKB2tF9qY8PhUAP0HT0EChLIFAHsi+7qcYuG7RTVg3eayXBJ6Lp6CFQlkCgTlZfCkMqTpVXDDZoNcEnoenoIVCWQKBOJl2OdXd1lpqCDqlqsEKrCT4JTUcPgbIEAnUyPVhENaORgoqafhfm0GqCT0LT0UOgLIFA3XSdoUW5FdToVzJXN6gn+BQ0HT0EyhIIdBebQ+w3FFp18KdpOnoIlCUQ6D5C7vL0KLTu4M/SdPQQKEsg0H0EPerObdC6gz9L09FDoCyBQPcR9NIPt0HrDv4sTUcPgbIEAt1HWAYKgVppOnoIlCUQ6D5OPmy57uDP0nT0EChLINB9BAkUbaB2mo4eAmUJBLoTZKDHaTp6CJQlEOhOzr1xrvLgT9J09BAoSyDQnUCgx2k6egiUJRDoTiDQ4zQdPQTKEgh0JxDocZqOHgJlCQS6Ewj0OE1HD4GyBALdSRfyyk4MpLfSdPQQKEsg0J1AoMdpOnoIlCUQ6F5ODQStPfhzNB09BMoSCHQvp25Fqj34czQdPQTKEgh0L6fuhq89+HM0HT0EyhIIdDchjaDzip3+mo+ng++T50H1p/4MEChLINB9GG9CcghUXquTKR1ASeo+9SeBQFkCge6jm4S4JVDnGhBoq0CgLIFA9zG+6jjsufQQqE7dp/4kEChLINCdjLXwqYIe0p2kpqWowrcLBMoSCHQnwoBBbaGzNld3Vh78SZqOHgJlCQR6kDERDdHnnLROMAn+IE1HD4GyBAI9xphRbuagRo2dR/BHaTp6CJQlEOgh1mFJu/zJI/jDNB09BMoSCPQYIQK19BjxCP4oTUcPgbIEAj2IqMN7DGrpc2cS/EGajh4CZQkEehBhR9+AJmSgKk1HD4GyBAI9ikgvpxFKljuUbIM+uQR/jKajh0BZAoGeZdLkrFFh0M6qT37B76Pp6CFQlkCgZxECnSauy7NDrCtzC34fTUcPgbIEAj2LosqtuzW5Bb+PpqOHQFkCgZ7FEKhvZW7B76Pp6CFQlkCgMdl8Vgjn4LdpOnoIlCUQaES2n7XEOPgAmo4eAmUJBBoRCNRP09FDoCyBQCMCgfppOnoIlCUQaEQgUD9NRw+BsgQCjQgE6qfp6CFQlkCgMYFAvTQdPQTKEgg0JhCol6ajh0BZAoFGBFV4P01HD4GyBAKNCATqp+noIVCWQKAR2X5nMePgA2g6egiUJRBoRCBQP01HD4GyBAKNCATqp+noIVCWQKARgUD9NB09BMoSCDQiEKifpqOHQFkCgUYEAvXTdPQQKEsg0IhAoH6ajh4CZQkEGhEI1E/T0UOgLIFAIwKB+mk6egiUJRBoVpoOvu3oIVCWQKBZaTr4tqOHQCnw+d3lcvf3L7dPrx8ugjeflHVe7r/7Ik//8fby8/JRWxcCzUvTwbcdPQRKgMfJmN9+8gj0tmAS6OcfLnf/7EeB3v06LYNAC9N08G1HD4GW5+V+MOLXd5fvlXm/KivdJDsK9Pk2/+vb96NAxQYQaGGaDr7t6CHQ8jxMdfGX+1WDt3zzZ2Wdl/tJoK8fbu7sn28f/3h798Pl/bgQAi1M08G3HT0ESgZZg48XtcHzJtT/NbaBvv4yJKYvf/40rP7fWbkQaGGaDr7t6CFQMki9RLfq+Xtl2cPl+2mxnIG++fQ4VeIh0MI0HXzb0UOgVPj9fpXmo9wceuP5lpDOfpXaQN98uiWmwzaSQL+ZeQIA1AUEepyHy+Xu32Lij7dqD9I4LRLUtRf+Zs2p3RQCBaB+INDDvP7yl/vL3T/mqWetBXTsZTLHgQ7WfBhyVVThC9N08G1Hjyo8GT6LOvxcMV+YepTsAh2TUwi0ME0H33b0ECgdROIpj2fqlyGhdoGOG0GghWk6+Lajh0DpIBT5rHYhPV6sNycJa97q9xBoYZoOvu3oIdDiLDV2IdAHdRD9hkBvlfj/QKBlaTr4tqOHQMvzMGec87+vH7S7OCccVfghYf3TPQRalKaDbzt6CLQ8L/eXn770r7/NDwcxK+TzWg6BDkOgINCiNB1829FDoAR4nirod2pNvlcfKeIW6E3AEGhRmg6+7eghUAp8/dtNnz9+nCakUaBhAu0fIdCyNB1829FDoCyBQLPSdPBtRw+BsgQCzUrTwbcdPQTKEgg0K00H33b0EChLINCsNB1829FDoCyBQLPSdPBtRw+BsgQCzUrTwbcdPQTKEgg0K00H33b0EChLINCsNB1829FDoCyBQLPSdPBtRw+BsgQCzUrTwbcdPQTKEgg0K00H33b0EChLINCsNB1829FDoCyBQLPSdPBtRw+BsgQCzUrTwbcdPQTKEgg0K00H33b0EChLINCsNB1829FDoCyBQLPSdPBtRw+BsgQCzUrTwbcdPQTKEgg0K00H33b0EChLINCsNB1829FDoCz5BgBQHaW94YZw0VJQ+ocAANhPaW+4IVw0HlA++clpOvi2o28l+EbCLEcrPyQrTQffdvStBN9ImOVo5Ydkpeng246+leAbCbMcrfyQrDQdfNvRtxJ8I2GWo5UfkpWmg287+laCbyTMcrTyQ7LSdPBtR99K8I2ECQAA8YFAAQDgIBAoAAAcBAIFAICDQKAAAHAQCBQAAA4CgQIAwEEgUAAAOAgEepg/3n4/f/r8t8vl7sePlol5xcvIm0/rvOeL2Pjhcnmvz6NPcPD967/uLxd1Vu3Bu6JXlsyTzZz63gie5anXgUAP8yDO+2/TRXL3qzEx8XIvXUWff7jc/XP4rc3X1HCJfS92+HPO8p8iOPhZIVO0TIJ3RK8smWjn1CtLJlieeh0I9CCvD+IH8Dz+Mr5+GH8pysSM/Bf2+fZz+/r2ff/6Yf7dPV/+dP/dl3GPH2TxkGZH8A+X7z4Os4YYeQTvil5ZMtPMqe8twTM89SYQ6DE+v7vMP5fXD1NV5PYn9b06IZD+wr5+GGY/3345j/MKD5f/d/4Bvcw/KPrsCP7lfry8/nh7i5FH8K7olSWCVk59bwme4am3AIEe4vFy+en36eeyVEqGi0WZmJH/wr7+Mnx8+fOn289m3vru18dp3cdaajJ7gn+cr6khOBbBO6NXlsw0c+ptwfM79TYg0EM8fvtvo+1bacqRJv54+93/uf11/uvQmL7+Jb7NHf7uDn9+59/Ug5S0kmZP8CKoYX0WwXuiN5c0dOrNJfxOvQ0I9DDPepO51JQjT4iOhPF3ItqCbr+bcY3hz/T0t3z5i14FgcEvKdhYT+MSvCf6Z60W29SpV5YwPfU6EOhhtB/SozwpTzzfKjdf+v/7r6m7cu6NHGa/Fw1J429q/ntcCYHBq1cRl+A90atLGjv1HoFyCd4AAj2Mfq1IOZgyIX5h2miN8YczNbSPrUCPVdVkAoOXriIlz6g7eE/06pLGTr1LoJxOvQ4Eehjl5/J8f/fePiGtr/Q2vn4Y+ySHfQx/oysbzBEYvJaGSPNrDt4XvXVQeCun3pOBSvNrDt4AAj2M/HN5VFNO629C+0vcP97WmhrQh2aguXG9FgKDd11FdQfvjt4h0DZOfZhA6w7eAAI9jPRz+U3+Hf1m96fxQ3q+vBcN6Lff03NdgzlCg5e7YtXtKw7eGb1boA2cej14nqdeBwI9zPLDeH24fLskGMrEOOOD44f0x9vvRdXu9it6qKsmExj8MshPH+xXdfCO6JUl49KGTr2yZITnqdeBQA+z/Fwe5Bauh4teJXlQ79yQFnz3/82/rZf7/+dDXYM5QoOXb0dRqDl4R/TKknlxM6deWTLC89TrQKCHET+XR/l39GgoZBgM+NOX/us7Y8nj3Q/zb+t2hVX2RJrQ4G+RfbvcEC1Tc/D26JUlE+2cemXJBM9TrwOBHuZZ3NJ2EXyvTtyun3nQ8PRUmo/aDm6Xl/htrc/2qoTg4L/Kj+SRqDl4a/TKktZOvbKE9anXgUAPM/9cni/SD0mZED+k/uvw3MSfjM7G29/fn5d9VVaT2RH8v27TP7IK3hq9sqS1U68sYX3qdSBQAAA4CAQKAAAHgUABAOAgECgAABwEAgUAgINAoAAAcBAIFAAADgKBAgDAQSBQAAA4CAQKAAAHgUABAOAgECgAABwEAgUAgINAoAAAcBAIFAAADgKBAgDAQSBQAAA4CAQKAAAHgUABAOAg/z9SyYk9Ne3SiwAAAABJRU5ErkJggg==" width="672" /></p>
+<p>The following is additional info that’s useful but not included in
+tutorial.</p>
 </div>
 </div>
 <div id="web-scraping" class="section level1">
