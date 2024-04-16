@@ -1,0 +1,72 @@
+---
+title: "Quarto Demo"
+author: "Rosie"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+## Code chunk options
+
+Your Quarto is broken up into 'code' chunks and text or 'markdown' chunks. Making nice looking Quarto documents means understanding how to format your code chunks and markdown chunks appropriately.
+
+<https://yihui.org/knitr/options/>
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+library(tidyverse)
+load("../data/processed/Dayflow.RData")
+
+ggplot(Dayflow, aes(x = Date, y = SAC)) + geom_line()
+```
+
+
+## Formatting Markdown chunks
+
+A few hints for the markdown chunks:
+
+-   You need two carriage returns to start a new line.
+-   Asterisks or dashes make bullets
+-   Hash tag indicate headings
+-   You can use html for fancy formatting
+-   css sheets are used for very fancy formatting (not covered here)
+-   Use backticks to put code in text blocks `function(x)`
+
+Quarto is an easy-to-write plain text format for creating dynamic documents and reports. See [quarto.org](https://quarto.org/docs/guide/) to learn more.
+
+## Figures
+
+You can include figures in a text chunk
+
+image: ![Alt text](figures/Big-Data-Kitty.jpg){#id .class width="300"}
+
+Or you can include them in code chunks.
+
+```{r Figure}
+#|fig.height=4
+#|fig.align="center"
+#|fig.cap="Alt text here"
+#|echo=FALSE
+
+knitr::include_graphics("figures/cheezburger-image.jpg")
+
+```
