@@ -13,25 +13,82 @@ output:
 This document provides examples and code for commonly-plotted data types using data collected in the San Francisco Estuary.
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(warning=FALSE, message=F)
 
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-library(lubridate)
-library(viridis)
-library(readr)
-library(here)
+library(ggplot2) # Plotting data
+library(dplyr) # Manipulating data
+library(lubridate) # Easy ways to define time variables
+library(viridis) # Color-blind friendly palettes
+library(readr) # For reading and writing data faster
+library(here) # For helping read in data - starts with your project directory filepath
+library(sf) # For working with spatial data
+library(deltamapr) # See instructions for downloading this basemap package https://github.com/InteragencyEcologicalProgram/deltamapr
+library(ggspatial) # for north arrow and scale bar
+library(mapview) # forinteractive plots
+library(ggridges)   # Add ridge plot support for ggplot
+
+# Setting ggplot theme, useful to help with consistency and allows you to get away with not specifying everytime
+theme_set(theme_classic(base_size = 18))
+```
+
+Some preliminary data reading and manipulation has been done in `prepare_data.R`.
+
+# Hydrological parameters
+
+## Water Year Index by Year
+
+### Sacramento Index
+
+```{r}
+df_wytype <- read_csv(here("data/processed/wytype_1906_cur.csv"))
+
+#plot water year index by year, color-coding by water year type. 
+ggplot(df_wytype, aes(x = Year, y = Sac_Index, fill = Sac_WYtype)) + geom_col()+
+  scale_fill_manual(values = c("firebrick", "orange", "yellow","skyblue", "blue"), name = "Water Year Type")+
+  ylab("Sacramento Valley Index")+ theme_bw()
+```
+
+### San Joaquin Index
+
+```{r}
+ggplot(df_wytype, aes(x = Year, y = SJ_Index, fill = SJ_WYtype)) + geom_col()+
+  scale_fill_manual(values = c("firebrick", "orange", "yellow","skyblue", "blue"), name = "Water Year Type")+
+  ylab("San Joaquin Valley Index")+ theme_bw()
+```
+## Delta Outflow
+
+```{r}
+DTO <- readRDS(here("data/raw/CDEC_DTO_2015_2023.rds"))
+
+ggplot(DTO, aes(x = datetime, y = parameter_value))+ geom_line()+
+  ylab("Net Delta Outflow Index (cfs, cdec)")
+```
+
+## Dayflow Outflow + Exports
+
+Using the patchwork package 
+
+```{r}
+Dayflow <- read_csv(here("data/processed/dayflow_1929_2023.csv"))
+
+outflow <- ggplot() + geom_line(data = Dayflow, aes(x = Date, y = OUT), color = "navy") 
+export <- ggplot() + geom_line(data = Dayflow, aes(x = Date, y = EXPORT), color = "goldenrod4")
+
+library(patchwork)
+outflow + export + plot_layout(nrow = 2)
 ```
 
 # Environmental time series
 
+We start with some examples of plots using environmental data from CDEC. 
+
 ## Multiple parameters 
 
 ```{r RVB-fig, fig.cap = "Air Temperature, Dissolved Oxygen, Electrical Conductivity and Turbidity Data at Rio Vista Bridge (RVB) in 2017. Data were downloaded from CDEC (cdec.water.ca.gov)", fig.width = 8, fig.height = 7.5}
-# Read in data
+
+# Read in data for Rio Vista
 RVB_df <- readRDS(here("data/raw/CDEC_parameters_RVB_2015_2019.rds")) %>%
-  filter(!(parameter == "EC" & parameter_value <100))
+  filter(!(parameter == "EC" & parameter_value <100)) # removing an outlier
 
 # Filter to 2017
 RVB_2017 <- RVB_df %>% 
@@ -55,7 +112,7 @@ RVB_2017 <- RVB_df %>%
 
 ```
 
-## Export figure
+## Example code for exporting figure
 
 ```{r, echo = FALSE, eval = FALSE}
 png(here("figures/plot_RVB_2017.png"), units = "in", width = 6, height = 8, res = 300)
@@ -63,11 +120,22 @@ rvb_plot
 dev.off()
 ```
 
+## Interactive plot
 
+Here is an interactive version, which can be helpful for identifying outliers, max, mins, etc.
+
+```{r}
+library(plotly)
+
+ggplotly(rvb_plot)
+```
 
 ## Multiple stations, water year type
 
+Here we group data by stations and water year type and add in a temperature threshold line. 
+
 ```{r CDECstations-fig, fig.cap = "Water Temperature at VER (Vernalis), JER (Jersey Point) and RVB (Rio Vista Bridge) between 2015-2018. Data were downloaded from CDEC (cdec.water.ca.gov). A threshold line of 70°F (approximately 21°C) is displayed on the plots to indicate stressful temperatures for some native fishes.", fig.width = 8, fig.height = 7.5}
+
 # Read in data
 watertemp_df <- readRDS(here("data/raw/CDEC_watertemp_JER_VER_RVB_2015_2019.rds")) 
 wytype <- read.csv(here("data/raw/WYType.csv")) %>%
@@ -101,18 +169,91 @@ ggplot(data = watertemp) +
 
 ```
 
+
+```{r}
+
+```
+
+## Explore trend of interest against historical or others
+
+This plot works best when you want to highlight a particular trend against other trends across different instances, such as year or station. 
+
+```{r}
+malWaterTemp <- readRDS(here("data/processed/CDEC_MAL_2024.rds"))
+
+ggplot(malWaterTemp, aes(dummyDate, dailyTemperature, group = year, color = color, size = color)) +
+  geom_line() +
+  scale_color_manual(values = c("2024" = "firebrick", "Others" = "grey70")) +
+  scale_size_manual(values = c("2024" = 1.5, "Others" = 0.7)) + 
+  scale_x_date(date_labels = "%b-%d") +
+  labs(x = "Date", y = "Water Temperature (\u00B0C)", 
+       title = "MAL, Daily Mean Water Temperature Across a Season",
+       subtitle = paste0("Year range: ", paste(range(malWaterTemp$year), collapse = " to ")),
+       color = "Year",
+       size = "Year") 
+```
+
+This type of plot allows you to very quickly place the trend of interest in respect with all other historical trends.
+
+## Explore trends across three axes
+
+Heat plots are very useful when you have three axes of interest (so are facets). Here, the three axes are date on the x, year on the y, and temperature on the z. 
+
+```{r}
+ggplot(malWaterTemp, aes(dummyDate, year, fill = dailyTemperature)) +
+  geom_tile() +
+  # The turbo color palette is the easiest to see for heatmaps, in my opinion
+  scale_fill_viridis(option = "turbo") +
+  # expand = c(0, 0) is used to remove the white spaces before and after the first axis values
+  scale_x_date(date_labels = "%b", expand = c(0, 0), date_breaks = "1 month") +
+  scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Date", y = "Year", 
+       title = "MAL, Daily Mean Water Temeprature Across a Season",
+       subtitle = paste0("Year range: ", paste(range(malWaterTemp$year), collapse = " to ")),
+       fill = "Water Temperature (\u00B0C)") +
+  theme_classic(base_size = 24) +
+  # Can move the legend position, size, and heigh  via theme() and guide()
+  theme(legend.position = "bottom",
+        legend.key.width = grid::unit(6, "cm"),
+        legend.key.height = grid::unit(0.75, "cm")) +
+  guides(fill = guide_colorbar(title.position = "bottom", 
+                               title.hjust = 0.5))
+```
+
+The heatplot allows us to see quickly that the middle of June through October is consistently the hottest period of the year.
+
+We can also use a density ridge plot to visualize this as well. This approach also highlights the distribution for each month throughout the years as well.
+
+```{r}
+library(ggridges)
+# Note that this is a density plot across all years
+malWaterTemp %>% 
+  mutate(Month = month(dummyDate, label = T, abbr = F)) %>% 
+  ggplot(aes(dailyTemperature, Month, fill = after_stat(x))) +
+  geom_density_ridges_gradient(rel_min_height = 0.01) +
+  scale_fill_viridis(option = "H") +
+  theme_classic(base_size = 24) +
+  theme(panel.grid.major.y = element_line()) +
+  labs(x = "Water Temperature (\u00B0C)", y = "Month", 
+       title = "MAL, General Daily Mean Water Temeprature Trend Across a Season",
+       subtitle = paste0("Year range: ", paste(range(malWaterTemp$year), collapse = " to ")),
+       fill = "Water Temperature (\u00B0C)")
+```
+
 # Fish Data
 
-## Abundance index barplot or escapement barplot (year by abundance)
+## Abundance Plot by Year
+
+This is a commonly made type of plot to look at abundance index, or some other annual metric, by year. 
 
 ```{r}
 FMWTindices <- read_csv("https://filelib.wildlife.ca.gov/Public/TownetFallMidwaterTrawl/FMWT%20Data/FMWTindices.csv") %>%
-  janitor::clean_names()
+  janitor::clean_names() # this function cleans column names
 
 ggplot(FMWTindices) + 
   geom_col(aes(x = factor(year), y = delta_smelt), fill = "steelblue4") +
   geom_text(aes(x = factor(year), y = delta_smelt +100, label = delta_smelt, angle = 90)) + 
-  labs(y = "Delta Smelt Index") +
+  labs(y = "Delta Smelt Index", x = "Year", title = "Annual Delta Smelt Index, 1967-2023") +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90)) 
 ```
@@ -120,6 +261,8 @@ ggplot(FMWTindices) +
 ## DJFMP Data Examples
 
 ### Sample size tile plot
+
+Looking at sample sizes for studies is often an important first step when analyzing a dataset.
 
 ```{r}
 fishdata <- readRDS(here("data/processed/djfmp_data_2015-2019.rds")) %>%
@@ -137,11 +280,14 @@ unique_samples <- fishdata %>%
 ggplot(unique_samples) + 
   geom_tile(aes(fYear, fMonth, fill = n), color = "black") +
   facet_wrap(~RegionCode) +
-  labs(title = "Sample Size by Month, Year, Region") +
+  labs(title = "DJFMP Sample Size by Month, Year, Region", x = "Year",y = "Month", fill = "Sample Size") +
   scale_fill_viridis(option = "plasma") + 
   theme_classic()
 ```
-### Fish cpue by year and month
+
+### Fish CPUE by year and month
+
+Here we select some native species and look at the mean CPUE by month and year.
 
 ```{r}
 native_spp <- c("SACSUC", "HITCH", "SPLITT", "SACPIK")
@@ -165,18 +311,11 @@ ggplot(monthly_data) +
   geom_col(aes(factor(fMonth), meanCPUE, fill = factor(fYear))) +
   facet_grid(factor(fYear)~IEPFishCode, scales = "free_y") +
   scale_fill_viridis(discrete = TRUE) +
+  labs(y = "Mean CPUE (Count m^-3)", x = "Month", fill = "Year", title = "Monthly Native Species CPUE, 2015-2019") +
   theme_bw()
-
-
 ```
 
-## Salvage by year
-```{r}
-
-```
-
-
-## cpue by region
+## CPUE by region
 
 ```{r}
 daily_data_all <- fishdata %>%
@@ -201,43 +340,103 @@ annual_data_all <- daily_data_all %>%
 ggplot(monthly_data_all) + 
   geom_col(aes(x = RegionCode, y = meanCPUE, fill = fMonth)) + 
   facet_wrap(~fYear) + 
-  labs(title = "Mean Monthly CPUE across regions, 2015-2019") +
+  labs(title = "Mean Monthly DJFMP CPUE across regions, 2015-2019", y = "Mean CPUE (Count m^-3)", fill = "Month") +
+  theme_bw() + 
   scale_fill_viridis(discrete = TRUE)
 ```
 
-## cpue by water year type  
+## CPUE by water year type  
 
 ```{r}
 wytype <- read_csv(here::here("data/processed/wytype_1906_cur.csv")) %>%
   rename(WY = Year)
 
 cpue_wytype <- left_join(monthly_data_all, wytype, by = "WY") 
-  group_by(WY) 
   
-
+  
 ggplot(cpue_wytype) + 
   geom_col(aes(x = WY, y = meanCPUE, fill = Sac_WYtype)) + 
   scale_fill_viridis(discrete = TRUE) +
+  labs(x = "Water Year" , y = "Mean CPUE (Count m^-3)", fill = "Water Year Type", title = "Mean DJFMP CPUE by Year and Water Year Type") +
   theme_bw() 
 ```
 
 
-## cpue by action period/inundation period 
+## CPUE by Action Period/Inundation period 
 
-* shaded periods of time with overlay of cpue or env data time series 
+```{r}
+chl <- read_csv(here("data/processed/yolo_chl_2016_2019.csv"))
+max_chl <- max(chl$chlorophyll, na.rm = TRUE)
 
+# Set bar at maximum value
+inun <- read_csv(here("data/processed/yolo_inun_2016_2019.csv")) %>%
+  mutate(inun_val = if_else(Inundation == TRUE, max_chl, 0))%>%
+  rename(sample_date = Dates)
+
+(plot_inunChl <- ggplot() +
+  geom_col(data = inun, aes(x = DOY, y = inun_val), fill = "gray90", color = "gray90") +
+  geom_line(data = chl, aes(x = DOY, y = chlorophyll, linetype = station_code, color = station_code),size = 1) +
+    facet_wrap(~Year, nrow = 4) + 
+  scale_colour_viridis(discrete = TRUE) +
+  scale_linetype_manual(values = c("dotted", "solid", "longdash"))+
+  labs(title = "Yolo Bypass Chlorophyll a Concentrations, \n2016-2019, with Inundation Periods", y = expression(Chlorophyll~a~(mg~L^-1)), fill = "Inundation") +
+  theme_bw() + 
+   theme(axis.title.x = element_blank(),
+         legend.key=element_rect(colour="black"),
+         axis.text.x = element_blank()))
+```
 
 
 # Spatial data
 
-## Station map
+Here are some brief examples for making maps 
 
-* mapview
-* normal
-
+## Prepare data and add a region(stratum) designation to each station
 ```{r}
-left_join()
+# Read in EDSM stations
+stations <-  readRDS(here("data/processed/djfmp_stations.rds"))
+
+# Convert stations to sf object, to be read as spatial data
+stations_sf <- st_as_sf(stations, coords = c("Longitude", "Latitude"), crs = 4326)
+
+# Read in EDSM Phase 3 Strata (naming them regions) - this object is in the deltamapr package
+regions <- R_EDSM_Strata_17P3
+
+# Transform stations to the same coordinate projection as EDSM regions
+stationsT <- st_transform(stations_sf, crs = st_crs(regions))
+
+# Join regions and stations
+station_regions <- st_join(stationsT, regions)
+
+# Only include stations within regions
+stations_in_regions <- st_intersection(stationsT, regions)
 ```
 
+## Interactive map
 
-## Fish detections map
+This is a quick way to look at/share stations for a study. You can modify the variable being color-coded by modifying the "zcol" parameter. 
+
+```{r}
+mapView(station_regions, zcol = "Stratum")
+```
+
+## Create static station map (could also be fish detections)
+```{r}
+# WW_Delta is a basemap layer you can use from the deltamapr package.
+(stratumMap <- ggplot() +
+  geom_sf(data = WW_Delta, fill = "gray80", color = "gray80") + #basemap layer
+  geom_sf(data = R_EDSM_Strata_17P3, aes(fill = Stratum), alpha = 0.3) + # region layer
+  geom_sf(data = stations_in_regions, size = 1.5, shape = 22)+ # station layer
+  scale_fill_brewer(palette = "Dark2") +
+  annotation_north_arrow(location = "tr", which_north = "true", 
+        pad_x = unit(0.1, "in"), pad_y = unit(0.1, "in"),
+        width = unit(0.5, "in"), height = unit(0.5, "in"),
+        style = north_arrow_fancy_orienteering) +
+  annotation_scale(location = "bl", bar_cols = c("magenta4", "white", "magenta4", "white")) +
+      labs(title = "DJFMP Stations in EDSM Strata")+
+  theme(axis.title = element_blank(),
+        panel.grid.major = element_line(color = "grey80", linetype = "dashed", size = 0.5))+
+  theme_bw()+
+  theme(axis.title = element_blank()))
+
+```
