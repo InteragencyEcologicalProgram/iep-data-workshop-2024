@@ -1,7 +1,17 @@
 # iep-data-workshop-2024
-Code associated with IEP Data Workshop 2024
 
-## Figure Gallery Figures
+![](iep.png){width="102" height="132"}
 
-* Air Temperature, Dissolved Oxygen, Electrical Conductivity and Turbidity Data at Rio Vista Bridge (RVB) in 2017
-* Water Temperature at VER (Vernalis), JER (Jersey Point) and RVB (Rio Vista Bridge) between 2015-2018. 
+This repository contains code associated with the 2024 IEP Data Management, Visualization, and Access Workshop.
+
+Go to [link]"unknownlink" to see figure gallery images.
+
+**Folders include:**
+
+-   **figure_gallery** folder contains code for figure gallery
+    -   See **baydelta-figure-gallery html** for combined figures in Rmarkdown.
+    -   The **prepare_data.R** script pulls and writes data for the figure gallery
+-   **presentations** folder contains presentations from the workshop.
+-   **coded_data_access** folder contains demonstration code for reading data from data packages and EDI
+-   **quartodemo** folder contains demonstration code for using quarto and Rmarkdown
+-   **shiny** folder contains demonstration code for creating a shiny app
