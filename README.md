@@ -1,6 +1,6 @@
 # iep-data-workshop-2024
 
-![](iep.png){width="102" height="132"}
+!["IEP Logo"](iep.png)
 
 This repository contains code associated with the 2024 IEP Data Management, Visualization, and Access Workshop.
 
