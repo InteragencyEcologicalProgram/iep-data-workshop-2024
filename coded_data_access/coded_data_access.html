@@ -11,7 +11,7 @@
 
 <meta name="author" content="Dave Bosworth CA Department of Water Resources" />
 
-<meta name="date" content="2024-04-11" />
+<meta name="date" content="2024-04-17" />
 
 <title>Coded data access in R</title>
 
@@ -1582,7 +1582,7 @@ font-size: 0.95em;
 <h1 class="title toc-ignore">Coded data access in R</h1>
 <h4 class="author">Dave Bosworth<br>CA Department of Water
 Resources</h4>
-<h4 class="date">April 11, 2024</h4>
+<h4 class="date">April 17, 2024</h4>
 
 </div>
 
@@ -1666,14 +1666,23 @@ CRAN: <a href="https://cloud.r-project.org/web/packages/EDIutils/index.html" cla
 <div id="list-data-package-revisions" class="section level3">
 <h3>List data package revisions</h3>
 <pre class="r"><code>library(EDIutils)
-edi_emp_rev &lt;- list_data_package_revisions(scope = &quot;edi&quot;, identifier = 458)
-edi_emp_rev</code></pre>
+edi_scope &lt;- &quot;edi&quot;
+edi_emp_id &lt;- 458
+
+list_data_package_revisions(scope = edi_scope, identifier = edi_emp_id)</code></pre>
 <pre><code>##  [1]  1  2  3  4  5  6  7  8  9 10</code></pre>
+<pre class="r"><code>edi_emp_rev &lt;- list_data_package_revisions(
+  scope = edi_scope, 
+  identifier = edi_emp_id, 
+  filter = &quot;newest&quot;
+)
+edi_emp_pid &lt;- paste(edi_scope, edi_emp_id, edi_emp_rev, sep = &quot;.&quot;)
+edi_emp_pid</code></pre>
+<pre><code>## [1] &quot;edi.458.10&quot;</code></pre>
 </div>
 <div id="list-data-entities" class="section level3">
 <h3>List data entities</h3>
-<pre class="r"><code>edi_emp_id_latest &lt;- paste0(&quot;edi.458.&quot;, max(edi_emp_rev))
-df_edi_emp_ent &lt;- read_data_entity_names(packageId = edi_emp_id_latest)
+<pre class="r"><code>df_edi_emp_ent &lt;- read_data_entity_names(packageId = edi_emp_pid)
 df_edi_emp_ent</code></pre>
 <pre><code>##                           entityId                 entityName
 ## 1 cf231071093ac2861893793517db26f3          EMP_DWQ_1975_2022
@@ -1687,7 +1696,8 @@ df_edi_emp_ent</code></pre>
   filter(entityName == &quot;EMP_DWQ_1975_2022&quot;) %&gt;% 
   pull(entityId)
 
-raw_emp_2022_edi &lt;- read_data_entity(packageId = edi_emp_id_latest, entityId = edi_emp_ent_id)
+raw_emp_2022_edi &lt;- read_data_entity(packageId = edi_emp_pid, entityId = edi_emp_ent_id)
+
 df_emp_2022_edi &lt;- read_csv(raw_emp_2022_edi)
 df_emp_2022_edi</code></pre>
 <pre><code>## # A tibble: 17,366 × 73
@@ -1716,31 +1726,28 @@ df_emp_2022_edi</code></pre>
 <h2><code>dataRetrieval</code></h2>
 <p>Package documentation: <a href="https://doi-usgs.github.io/dataRetrieval/" class="uri">https://doi-usgs.github.io/dataRetrieval/</a> <br> Available
 on CRAN: <a href="https://cloud.r-project.org/web/packages/dataRetrieval/index.html" class="uri">https://cloud.r-project.org/web/packages/dataRetrieval/index.html</a></p>
-<div id="station-information" class="section level3">
-<h3>Station Information</h3>
 <p>Sacramento River at Freeport CA (USGS station 11447650): <a href="https://waterdata.usgs.gov/monitoring-location/11447650/" class="uri">https://waterdata.usgs.gov/monitoring-location/11447650/</a></p>
+<div id="nwis-web-services" class="section level3">
+<h3>NWIS Web Services</h3>
+<div id="station-information" class="section level4">
+<h4>Station Information</h4>
 <pre class="r"><code>library(dataRetrieval)
 
-whatNWISsites(sites = &quot;11447650&quot;)</code></pre>
-<pre><code>##   agency_cd  site_no                 station_nm site_tp_cd dec_lat_va
-## 1      USGS 11447650 SACRAMENTO R A FREEPORT CA         ST   38.45566
-##   dec_long_va colocated           queryTime
-## 1   -121.5016     FALSE 2024-04-11 15:34:24</code></pre>
-<pre class="r"><code>whatWQPsites(siteid = &quot;USGS-11447650&quot;)</code></pre>
-<pre><code>## # A tibble: 1 × 37
-##   OrganizationIdentifier OrganizationFormalName           MonitoringLocationId…¹
-##   &lt;chr&gt;                  &lt;chr&gt;                            &lt;chr&gt;                 
-## 1 USGS-CA                USGS California Water Science C… USGS-11447650         
-## # ℹ abbreviated name: ¹​MonitoringLocationIdentifier
-## # ℹ 34 more variables: MonitoringLocationName &lt;chr&gt;,
-## #   MonitoringLocationTypeName &lt;chr&gt;, MonitoringLocationDescriptionText &lt;chr&gt;,
-## #   HUCEightDigitCode &lt;chr&gt;, DrainageAreaMeasure.MeasureValue &lt;dbl&gt;,
-## #   DrainageAreaMeasure.MeasureUnitCode &lt;chr&gt;,
-## #   ContributingDrainageAreaMeasure.MeasureValue &lt;dbl&gt;,
-## #   ContributingDrainageAreaMeasure.MeasureUnitCode &lt;chr&gt;, …</code></pre>
+df_srf_sta_info &lt;- whatNWISsites(sites = &quot;11447650&quot;)
+glimpse(df_srf_sta_info)</code></pre>
+<pre><code>## Rows: 1
+## Columns: 8
+## $ agency_cd   &lt;chr&gt; &quot;USGS&quot;
+## $ site_no     &lt;chr&gt; &quot;11447650&quot;
+## $ station_nm  &lt;chr&gt; &quot;SACRAMENTO R A FREEPORT CA&quot;
+## $ site_tp_cd  &lt;chr&gt; &quot;ST&quot;
+## $ dec_lat_va  &lt;dbl&gt; 38.45566
+## $ dec_long_va &lt;dbl&gt; -121.5016
+## $ colocated   &lt;lgl&gt; FALSE
+## $ queryTime   &lt;dttm&gt; 2024-04-17 15:57:22</code></pre>
 </div>
-<div id="data-availability---nwis" class="section level3">
-<h3>Data availability - NWIS</h3>
+<div id="data-availability" class="section level4">
+<h4>Data availability</h4>
 <pre class="r"><code>df_srf_uv_data_avail &lt;- whatNWISdata(siteNumber = &quot;11447650&quot;, service = &quot;uv&quot;)
 glimpse(df_srf_uv_data_avail)</code></pre>
 <pre><code>## Rows: 15
@@ -1767,40 +1774,75 @@ glimpse(df_srf_uv_data_avail)</code></pre>
 ## $ srs_id             &lt;chr&gt; &quot;1645597&quot;, &quot;1645597&quot;, &quot;1645423&quot;, &quot;17164583&quot;, &quot;16466…
 ## $ access_cd          &lt;chr&gt; &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;…
 ## $ begin_date         &lt;date&gt; 2007-10-01, 2013-08-30, 2007-10-01, 2007-10-01, 20…
-## $ end_date           &lt;date&gt; 2024-04-11, 2024-04-11, 2024-04-11, 2024-04-11, 20…
-## $ count_nu           &lt;dbl&gt; 6037, 3877, 6037, 6037, 3877, 3877, 3877, 3877, 387…</code></pre>
+## $ end_date           &lt;date&gt; 2024-04-17, 2024-04-17, 2024-04-17, 2024-04-17, 20…
+## $ count_nu           &lt;dbl&gt; 6043, 3883, 6043, 6043, 3883, 3883, 3883, 3883, 388…</code></pre>
 </div>
-<div id="usgs-parameter-codes" class="section level3">
-<h3>USGS parameter codes</h3>
-<pre class="r"><code>as_tibble(parameterCdFile) %&gt;% 
-  filter(parameter_cd %in% unique(df_srf_uv_data_avail$parm_cd)) %&gt;% 
-  select(parameter_cd, parameter_nm, parameter_units) %&gt;% 
-  right_join(
-    select(df_srf_uv_data_avail, parm_cd, loc_web_ds, begin_date, end_date, count_nu),
-    by = join_by(parameter_cd == parm_cd)
-  )</code></pre>
+<div id="usgs-parameter-codes" class="section level4">
+<h4>USGS parameter codes</h4>
+<pre class="r"><code>as_tibble(parameterCdFile)</code></pre>
+<pre><code>## # A tibble: 24,200 × 6
+##    parameter_cd parameter_group_nm parameter_nm    casrn srsname parameter_units
+##    &lt;chr&gt;        &lt;chr&gt;              &lt;chr&gt;           &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;          
+##  1 00001        Information        Location in cr… &quot; &quot;   &quot; &quot;     ft             
+##  2 00002        Information        Location in cr… &quot; &quot;   &quot; &quot;     %              
+##  3 00003        Information        Sampling depth… &quot; &quot;   &quot; &quot;     ft             
+##  4 00004        Physical           Stream width, … &quot; &quot;   &quot;Instr… ft             
+##  5 00005        Information        Location in cr… &quot; &quot;   &quot; &quot;     %              
+##  6 00008        Information        Sample account… &quot; &quot;   &quot; &quot;     nu             
+##  7 00009        Information        Location in cr… &quot; &quot;   &quot; &quot;     ft             
+##  8 00010        Physical           Temperature, w… &quot; &quot;   &quot;Tempe… deg C          
+##  9 00011        Physical           Temperature, w… &quot; &quot;   &quot;Tempe… deg F          
+## 10 00012        Physical           Evaporation te… &quot; &quot;   &quot; &quot;     deg C          
+## # ℹ 24,190 more rows</code></pre>
+<pre class="r"><code>srf_uv_parm_cd &lt;- unique(df_srf_uv_data_avail$parm_cd)
+srf_uv_parm_cd</code></pre>
+<pre><code>##  [1] &quot;00010&quot; &quot;00060&quot; &quot;00065&quot; &quot;00095&quot; &quot;00300&quot; &quot;00301&quot; &quot;00400&quot; &quot;00480&quot; &quot;32295&quot;
+## [10] &quot;32316&quot; &quot;63680&quot; &quot;72137&quot; &quot;72255&quot;</code></pre>
+<pre class="r"><code>df_srf_uv_parm_cd &lt;- as_tibble(parameterCdFile) %&gt;% 
+  filter(parameter_cd %in% srf_uv_parm_cd) %&gt;% 
+  select(parameter_cd, parameter_nm, parameter_units)
+df_srf_uv_parm_cd</code></pre>
+<pre><code>## # A tibble: 13 × 3
+##    parameter_cd parameter_nm                                     parameter_units
+##    &lt;chr&gt;        &lt;chr&gt;                                            &lt;chr&gt;          
+##  1 00010        Temperature, water, degrees Celsius              deg C          
+##  2 00060        Discharge, cubic feet per second                 ft3/s          
+##  3 00065        Gage height, feet                                ft             
+##  4 00095        Specific conductance, water, unfiltered, micros… uS/cm @25C     
+##  5 00300        Dissolved oxygen, water, unfiltered, milligrams… mg/l           
+##  6 00301        Dissolved oxygen, water, unfiltered, percent of… % saturatn     
+##  7 00400        pH, water, unfiltered, field, standard units     std units      
+##  8 00480        Salinity, water, unfiltered, parts per thousand  ppth           
+##  9 32295        Dissolved organic matter fluorescence (fDOM), w… ug/l QSE       
+## 10 32316        Chlorophyll fluorescence (fChl), water, in situ… ug/l           
+## 11 63680        Turbidity, water, unfiltered, monochrome near i… FNU            
+## 12 72137        Discharge, tidally filtered, cubic feet per sec… ft3/s          
+## 13 72255        Mean water velocity for discharge computation, … ft/sec</code></pre>
+<pre class="r"><code>as_tibble(df_srf_uv_data_avail) %&gt;% 
+  select(parm_cd, loc_web_ds, begin_date, end_date, count_nu) %&gt;% 
+  left_join(df_srf_uv_parm_cd, by = join_by(parm_cd == parameter_cd))</code></pre>
 <pre><code>## # A tibble: 15 × 7
-##    parameter_cd parameter_nm    parameter_units loc_web_ds begin_date end_date  
-##    &lt;chr&gt;        &lt;chr&gt;           &lt;chr&gt;           &lt;chr&gt;      &lt;date&gt;     &lt;date&gt;    
-##  1 00010        Temperature, w… deg C           [Right Ba… 2007-10-01 2024-04-11
-##  2 00010        Temperature, w… deg C           BGC PROJE… 2013-08-30 2024-04-11
-##  3 00060        Discharge, cub… ft3/s           &lt;NA&gt;       2007-10-01 2024-04-11
-##  4 00065        Gage height, f… ft              [PRIMARY]  2007-10-01 2024-04-11
-##  5 00095        Specific condu… uS/cm @25C      BGC PROJE… 2013-08-30 2024-04-11
-##  6 00300        Dissolved oxyg… mg/l            BGC PROJE… 2013-08-30 2024-04-11
-##  7 00301        Dissolved oxyg… % saturatn      BGC PROJE… 2013-08-30 2024-04-11
-##  8 00400        pH, water, unf… std units       BGC PROJE… 2013-08-30 2024-04-11
-##  9 00480        Salinity, wate… ppth            BGC PROJE… 2013-08-30 2024-04-11
-## 10 32295        Dissolved orga… ug/l QSE        BGC PROJE… 2021-04-12 2024-04-11
-## 11 32316        Chlorophyll fl… ug/l            BGC PROJE… 2013-08-30 2024-04-11
-## 12 63680        Turbidity, wat… FNU             MEDIAN TS… 2009-12-03 2013-10-01
-## 13 63680        Turbidity, wat… FNU             BGC PROJE… 2013-08-30 2024-04-11
-## 14 72137        Discharge, tid… ft3/s           &lt;NA&gt;       2015-10-01 2024-04-10
-## 15 72255        Mean water vel… ft/sec          &lt;NA&gt;       2015-10-01 2024-04-11
-## # ℹ 1 more variable: count_nu &lt;dbl&gt;</code></pre>
+##    parm_cd loc_web_ds                begin_date end_date   count_nu parameter_nm
+##    &lt;chr&gt;   &lt;chr&gt;                     &lt;date&gt;     &lt;date&gt;        &lt;dbl&gt; &lt;chr&gt;       
+##  1 00010   [Right Bank Pump Stand]   2007-10-01 2024-04-17     6043 Temperature…
+##  2 00010   BGC PROJECT, [East Fende… 2013-08-30 2024-04-17     3883 Temperature…
+##  3 00060   &lt;NA&gt;                      2007-10-01 2024-04-17     6043 Discharge, …
+##  4 00065   [PRIMARY]                 2007-10-01 2024-04-17     6043 Gage height…
+##  5 00095   BGC PROJECT, [East Fende… 2013-08-30 2024-04-17     3883 Specific co…
+##  6 00300   BGC PROJECT, [East Fende… 2013-08-30 2024-04-17     3883 Dissolved o…
+##  7 00301   BGC PROJECT, [Computed]   2013-08-30 2024-04-17     3883 Dissolved o…
+##  8 00400   BGC PROJECT, [East Fende… 2013-08-30 2024-04-17     3883 pH, water, …
+##  9 00480   BGC PROJECT, [East Fende… 2013-08-30 2024-04-17     3883 Salinity, w…
+## 10 32295   BGC PROJECT, [East Fende… 2021-04-18 2024-04-17     1095 Dissolved o…
+## 11 32316   BGC PROJECT               2013-08-30 2024-04-17     3883 Chlorophyll…
+## 12 63680   MEDIAN TS087: YSI model … 2009-12-03 2013-10-01     1398 Turbidity, …
+## 13 63680   BGC PROJECT, [East Fende… 2013-08-30 2024-04-17     3883 Turbidity, …
+## 14 72137   &lt;NA&gt;                      2015-10-01 2024-04-16     3120 Discharge, …
+## 15 72255   &lt;NA&gt;                      2015-10-01 2024-04-17     3121 Mean water …
+## # ℹ 1 more variable: parameter_units &lt;chr&gt;</code></pre>
 </div>
-<div id="continuous-data---instantaneous" class="section level3">
-<h3>Continuous data - instantaneous</h3>
+<div id="continuous-data---instantaneous" class="section level4">
+<h4>Continuous data - instantaneous</h4>
 <pre class="r"><code>df_srf_spc_inst &lt;- readNWISuv(
   siteNumbers = &quot;11447650&quot;,
   parameterCd = &quot;00095&quot;, 
@@ -1823,8 +1865,8 @@ as_tibble(df_srf_spc_inst)</code></pre>
 ## 10 USGS      11447650 2023-01-01 02:15:00           117 P                Americ…
 ## # ℹ 34,206 more rows</code></pre>
 </div>
-<div id="continuous-data---daily-averages" class="section level3">
-<h3>Continuous data - daily averages</h3>
+<div id="continuous-data---daily-averages" class="section level4">
+<h4>Continuous data - daily averages</h4>
 <pre class="r"><code>df_srf_tfq_davg &lt;- readNWISdv(
   siteNumbers = &quot;11447650&quot;,
   parameterCd = &quot;72137&quot;, 
@@ -1846,8 +1888,26 @@ as_tibble(df_srf_tfq_davg)</code></pre>
 ## 10 USGS      11447650 2023-01-10         79900 A               
 ## # ℹ 355 more rows</code></pre>
 </div>
-<div id="data-availability---wqp" class="section level3">
-<h3>Data availability - WQP</h3>
+</div>
+<div id="wqp-web-services" class="section level3">
+<h3>WQP Web Services</h3>
+<div id="station-information-1" class="section level4">
+<h4>Station Information</h4>
+<pre class="r"><code>whatWQPsites(siteid = &quot;USGS-11447650&quot;)</code></pre>
+<pre><code>## # A tibble: 1 × 37
+##   OrganizationIdentifier OrganizationFormalName           MonitoringLocationId…¹
+##   &lt;chr&gt;                  &lt;chr&gt;                            &lt;chr&gt;                 
+## 1 USGS-CA                USGS California Water Science C… USGS-11447650         
+## # ℹ abbreviated name: ¹​MonitoringLocationIdentifier
+## # ℹ 34 more variables: MonitoringLocationName &lt;chr&gt;,
+## #   MonitoringLocationTypeName &lt;chr&gt;, MonitoringLocationDescriptionText &lt;chr&gt;,
+## #   HUCEightDigitCode &lt;chr&gt;, DrainageAreaMeasure.MeasureValue &lt;dbl&gt;,
+## #   DrainageAreaMeasure.MeasureUnitCode &lt;chr&gt;,
+## #   ContributingDrainageAreaMeasure.MeasureValue &lt;dbl&gt;,
+## #   ContributingDrainageAreaMeasure.MeasureUnitCode &lt;chr&gt;, …</code></pre>
+</div>
+<div id="data-availability-1" class="section level4">
+<h4>Data availability</h4>
 <pre class="r"><code>df_srf_nutr_data_avail &lt;- readWQPsummary(
   siteid = &quot;USGS-11447650&quot;, 
   characteristicType = &quot;Nutrient&quot;
@@ -1902,8 +1962,8 @@ as_tibble(df_srf_tfq_davg)</code></pre>
 ## 11 Nitrogen                                                 2001   2023      222
 ## 12 Particulate nitrogen/particulate organic carbon          2001   2018      115</code></pre>
 </div>
-<div id="discrete-wq-data-from-wqp" class="section level3">
-<h3>Discrete WQ data from WQP</h3>
+<div id="discrete-wq-data" class="section level4">
+<h4>Discrete WQ data</h4>
 <p>Import discrete nitrate data from the Water Quality Portal (WQP)</p>
 <pre class="r"><code>df_srf_nitrate &lt;- readWQPqw(
   siteNumbers = &quot;USGS-11447650&quot;,
@@ -1938,8 +1998,17 @@ as_tibble(df_srf_tfq_davg)</code></pre>
 ## # ℹ abbreviated name: ¹​MonitoringLocationIdentifier
 ## # ℹ 1 more variable: ResultMeasureValue &lt;dbl&gt;</code></pre>
 </div>
-<div id="usgs-county-and-state-codes" class="section level3">
-<h3>USGS County and State codes</h3>
+</div>
+<div id="other-information" class="section level3">
+<h3>Other Information</h3>
+<p>More useful links for accessing USGS data through
+<code>dataRetrieval</code>:</p>
+<ul>
+<li>Parameter codes: <a href="https://help.waterdata.usgs.gov/codes-and-parameters/parameters" class="uri">https://help.waterdata.usgs.gov/codes-and-parameters/parameters</a></li>
+<li>Stat (Statistic) codes: <a href="https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html" class="uri">https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html</a></li>
+</ul>
+<div id="usgs-county-and-state-codes" class="section level4">
+<h4>USGS County and State codes</h4>
 <pre class="r"><code>as_tibble(countyCd)</code></pre>
 <pre><code>## # A tibble: 3,253 × 5
 ##    STATE COUNTY COUNTY_NAME     STUSAB COUNTY_ID
@@ -1970,19 +2039,14 @@ as_tibble(df_srf_tfq_davg)</code></pre>
 ##  9 10    Delaware             DE     01779781
 ## 10 11    District of Columbia DC     01702382
 ## # ℹ 48 more rows</code></pre>
-<p>More useful links for accessing USGS data through
-<code>dataRetrieval</code>:</p>
-<ul>
-<li>Parameter codes: <a href="https://help.waterdata.usgs.gov/codes-and-parameters/parameters" class="uri">https://help.waterdata.usgs.gov/codes-and-parameters/parameters</a></li>
-<li>Stat (Statistic) codes: <a href="https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html" class="uri">https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html</a></li>
-</ul>
+</div>
 </div>
 </div>
 <div id="cder" class="section level2">
 <h2><code>cder</code></h2>
 <p>Package documentation: <a href="https://hydroecology.net/cder/index.html" class="uri">https://hydroecology.net/cder/index.html</a> <br> Available
 on CRAN: <a href="https://cran.r-project.org/web/packages/cder/index.html" class="uri">https://cran.r-project.org/web/packages/cder/index.html</a></p>
-<div id="station-information-1" class="section level3">
+<div id="station-information-2" class="section level3">
 <h3>Station Information</h3>
 <pre class="r"><code>library(cder)</code></pre>
 <pre class="r"><code>cdec_meta(station = &quot;FPT&quot;)</code></pre>
@@ -2040,29 +2104,31 @@ create_fish_db()</code></pre>
 surv &lt;- open_survey()
 fish &lt;- open_fish()</code></pre>
 <pre><code>## Note: fish length units are not all compatible across surveys. The Suisun study uses standard length while the other surveys use fork/total length. Use deltafish::convert_lengths to convert the length units of the 20 taxa for which we have conversion equations from standard length to fork/total length.</code></pre>
-<pre class="r"><code># Filter for sources and taxa of interest
+<pre class="r"><code># Filter for sources and taxa of interest and join them together
 surv_FMWT &lt;- surv %&gt;% filter(Source == &quot;FMWT&quot;) %&gt;% select(SampleID, Date)
 
 fish_smelt &lt;- fish %&gt;% 
   filter(Taxa %in% c(&quot;Dorosoma petenense&quot;, &quot;Morone saxatilis&quot;, &quot;Spirinchus thaleichthys&quot;))
 
-# Join and collect the resulting data frame - collect executes 
+df_fish &lt;- left_join(surv_FMWT, fish_smelt)
+
+# Collect the resulting data frame - collect executes
   # the SQL query and gives you a table
-df_fish &lt;- left_join(surv_FMWT, fish_smelt) %&gt;% collect()
-df_fish</code></pre>
+df_fish_c &lt;- collect(df_fish)
+df_fish_c</code></pre>
 <pre><code>## # A tibble: 175,009 × 6
 ##    SampleID Date       Length Count Notes_catch Taxa                   
 ##    &lt;chr&gt;    &lt;date&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;                  
-##  1 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Dorosoma petenense     
-##  2 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
-##  3 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Morone saxatilis       
-##  4 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Dorosoma petenense     
-##  5 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
-##  6 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Morone saxatilis       
-##  7 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Dorosoma petenense     
-##  8 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
-##  9 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Morone saxatilis       
-## 10 FMWT 4   1992-09-16     68     1 &lt;NA&gt;        Dorosoma petenense     
+##  1 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
+##  2 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Morone saxatilis       
+##  3 FMWT 1   1992-01-10     NA     0 &lt;NA&gt;        Dorosoma petenense     
+##  4 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
+##  5 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Morone saxatilis       
+##  6 FMWT 2   1992-02-07     NA     0 &lt;NA&gt;        Dorosoma petenense     
+##  7 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
+##  8 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Morone saxatilis       
+##  9 FMWT 3   1992-03-18     NA     0 &lt;NA&gt;        Dorosoma petenense     
+## 10 FMWT 4   1992-09-16     NA     0 &lt;NA&gt;        Spirinchus thaleichthys
 ## # ℹ 174,999 more rows</code></pre>
 </div>
 <div id="zooper" class="section level2">
