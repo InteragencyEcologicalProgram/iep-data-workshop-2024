@@ -4,7 +4,7 @@
 
 This repository contains code associated with the 2024 IEP Data Management, Visualization, and Access Workshop.
 
-Go to [link]"unknownlink" to see figure gallery images.
+Go to [link](https://interagencyecologicalprogram.github.io/iep-data-workshop-2024/baydelta-figure-gallery.html) to see figure gallery images.
 
 **Folders include:**
 
