@@ -10,4 +10,5 @@ layout: default
 
 * [Coded Data Access](coded_data_access.html)
 * [Rmarkdown Demo](RMarkdownDemo.html)
+* [Quarto Demo](QuartoDemo.html)
 
