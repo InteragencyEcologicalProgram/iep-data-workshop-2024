@@ -15,7 +15,16 @@ When you click the **Render** button a document will be generated that includes 
 
 ```{r}
 1 + 1
+
+3+10
+
+summary(cars)
 ```
+
+```{r}
+
+```
+
 
 ## Code chunk options
 
@@ -34,7 +43,8 @@ The `echo: false` option disables the printing of code (only output is displayed
 
 ```{r}
 library(tidyverse)
-load("../data/processed/Dayflow.RData")
+
+load("Dayflow.RData")
 
 ggplot(Dayflow, aes(x = Date, y = SAC)) + geom_line()
 ```
