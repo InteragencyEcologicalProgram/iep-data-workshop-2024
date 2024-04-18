@@ -16,13 +16,14 @@ When you click the **Render** button a document will be generated that includes 
 ```{r}
 1 + 1
 
-3+10
+5+7
 
 summary(cars)
 ```
 
-```{r}
 
+```{r}
+hist(cars$speed)
 ```
 
 
@@ -80,3 +81,44 @@ Or you can include them in code chunks.
 knitr::include_graphics("figures/cheezburger-image.jpg")
 
 ```
+
+
+By default, tables just print like they do in the consul when you knit the document
+
+```{r table}
+test = data.frame(Year = c(2000:2023), X =c(0:23), Y = c("Apple", "banana", "cheese"),
+                  Z = c(exp(1), pi, exp(2)))
+
+print(test)
+
+
+```
+
+You can do better with the `kable` function in the `knitr` package
+
+```{r kable}
+#|results = 'asis'
+library(knitr)
+kable(test, format = "pipe", caption = "A prettier table", digits =2, padding =2)
+
+```
+
+You can make interactive and sortable tables with the `DT` package. <https://rstudio.github.io/DT/>
+
+```{r DTtable}
+library(DT)
+
+datatable(test, filter = "top", class = "cell-border stripe")
+
+```
+
+## Further Reading
+
+There are lots and lots of extensions you can add to your markdown documetns to make them really, really spiffy. A few examples:
+
+-   HTML widgets such as `leaflet` for [maps](https://rpubs.com/jcheng/leaflet-layers-example) - <https://cran.r-project.org/web/packages/leaflet/index.html>
+-   Interactive [dashboards](https://gallery.shinyapps.io/cran-gauge/) - <https://pkgs.rstudio.com/flexdashboard/>
+-   Interactive graphs - <https://cran.r-project.org/web/packages/dygraphs/index.html>
+-   Web books ([bookdown](https://pkgs.rstudio.com/bookdown/articles/examples.html), up next)
+-   [Shiny](https://shiny.posit.co/r/gallery/) web apps (coming up soon)
+-   <https://quarto.org/docs/gallery/>
