@@ -9,4 +9,5 @@ layout: default
 ## Code from Presentations
 
 * [Coded Data Access](coded_data_access.html)
+* [Rmarkdown Demo](RMarkdownDemo.html)
 
