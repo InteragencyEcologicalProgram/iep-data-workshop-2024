@@ -15,3 +15,4 @@ Go to [link](https://interagencyecologicalprogram.github.io/iep-data-workshop-20
 -   **coded_data_access** folder contains demonstration code for reading data from data packages and EDI
 -   **quartodemo** folder contains demonstration code for using quarto and Rmarkdown
 -   **shiny** folder contains demonstration code for creating a shiny app
+-   **resources** folder contains resource spreadsheet and speaker bios and agenda for workshop  
