@@ -1,7 +1,7 @@
 ---
 title: "Bay Delta Figure Gallery"
 author: "DUWG"
-date: "2024-01-12"
+date: "2024-04-17"
 output: 
   html_document: 
     toc: true
@@ -14,7 +14,7 @@ output:
 
 Load in packages
 
-```{r setup, include=FALSE}
+```{r setup, include=TRUE, warning = FALSE, message = FALSE}
 knitr::opts_chunk$set(warning=FALSE, message=F)
 
 library(ggplot2) # Plotting data
@@ -140,7 +140,7 @@ RVB_2017 <- RVB_df %>%
 
 ## Example code for exporting figure
 
-```{r, echo = FALSE, eval = FALSE}
+```{r, echo = TRUE, eval = FALSE}
 png(here("figure_gallery/figures/plot_RVB_2017.png"), units = "in", width = 6, height = 8, res = 300)
 rvb_plot
 dev.off()
